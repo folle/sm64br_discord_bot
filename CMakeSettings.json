@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "name": "Linux-arm64-Debug",
+      "configurationType": "Debug",
+      "generator": "Ninja",
+      "inheritEnvironments": []
+    },
+    {
+      "name": "Linux-arm64-Release",
+      "configurationType": "Release",
+      "generator": "Ninja",
+      "inheritEnvironments": []
+    },
+    {
+      "name": "Windows-x64-Debug",
+      "configurationType": "Debug",
+      "generator": "Ninja",
+      "inheritEnvironments": [ "msvc_x64_x64" ]
+    },
+    {
+      "name": "Windows-x64-Release",
+      "configurationType": "Release",
+      "generator": "Ninja",
+      "inheritEnvironments": [ "msvc_x64_x64" ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "dependencies": [
+    "dpp",
+    "fmt",
+    "spdlog",
+    {
+      "name": "opus",
+      "platform": "linux"
+    },
+    {
+      "name": "libsodium",
+      "platform": "linux"
+    }
+  ]
+}
