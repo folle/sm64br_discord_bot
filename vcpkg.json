@@ -12,6 +12,14 @@
       "name": "opus",
       "platform": "linux"
     },
-    "spdlog"
+    {
+      "name": "openssl",
+      "platform": "linux"
+    },
+    "spdlog",
+    {
+      "name": "zlib",
+      "platform": "linux"
+    }
   ]
 }

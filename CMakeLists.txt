@@ -23,17 +23,14 @@ project(sm64br_discord_bot VERSION 1.0 DESCRIPTION "SM64BR Discord Bot")
 # Bot project
 add_executable(${PROJECT_NAME}
   src/main.cc
-  src/bot/defs.h
   src/bot/sm64br_discord_bot.cc
   src/bot/sm64br_discord_bot.h
-  src/bot/database/server_database.cc
-  src/bot/database/server_database.h
+  src/bot/database/database.cc
+  src/bot/database/database.h
   src/bot/message_handler/message_handler.cc
   src/bot/message_handler/message_handler.h
   src/logger/logger.cc
-  src/logger/logger.h
-  src/utils/file_utils.cc
-  src/utils/file_utils.h)
+  src/logger/logger.h)
 
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -48,7 +45,9 @@ find_package(spdlog CONFIG REQUIRED)              # Logging
 
 if(UNIX)
 find_package(Opus CONFIG REQUIRED)                # DPP dependency
+find_package(OpenSSL REQUIRED)
 find_package(unofficial-sodium CONFIG REQUIRED)   # DPP dependency
+find_package(ZLIB REQUIRED)
 endif(UNIX)
 
 if(WIN32)
@@ -61,9 +60,11 @@ elseif(UNIX)
 target_link_libraries(${PROJECT_NAME} PRIVATE
   dpp::dpp
   fmt::fmt-header-only
+  OpenSSL::SSL
   Opus::opus
   spdlog::spdlog_header_only
-  unofficial-sodium::sodium unofficial-sodium::sodium_config_public)
+  unofficial-sodium::sodium unofficial-sodium::sodium_config_public
+  ZLIB::ZLIB)
 endif()
 
 
@@ -72,6 +73,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   CXX_STANDARD_REQUIRED ON)
 
 
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/database/server_database.json")
-  configure_file(samples/server_database.json "${CMAKE_BINARY_DIR}/database/server_database.json", COPYONLY)
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/database/database.json")
+  configure_file(sample/database.json "${CMAKE_BINARY_DIR}/database/database.json", COPYONLY)
 endif()
