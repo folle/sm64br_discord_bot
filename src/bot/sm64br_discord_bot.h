@@ -2,8 +2,10 @@
 
 #include <dpp/dpp.h>
 #include <future>
+#include <map>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 #include "database/database.h"
 #include "message_handler/message_handler.h"
@@ -36,7 +38,7 @@ private:
   
   MessageHandler message_handler_;
 
-  std::vector<dpp::snowflake> streaming_users_ids_;
+  std::map<dpp::snowflake, dpp::snowflake> streaming_users_ids_and_messages_ids_;
   std::mutex on_presence_update_mutex_;
 
   std::vector<std::future<void>> message_create_futures_;

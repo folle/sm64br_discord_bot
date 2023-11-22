@@ -74,5 +74,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/database/database.json")
-  configure_file(sample/database.json "${CMAKE_BINARY_DIR}/database/database.json", COPYONLY)
+  configure_file(sample/database.json "${CMAKE_BINARY_DIR}/database/database.json" COPYONLY)
 endif()

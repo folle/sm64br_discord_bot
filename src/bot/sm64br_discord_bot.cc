@@ -116,15 +116,15 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
 
     const std::lock_guard<std::mutex> lock(on_presence_update_mutex_);
 
-    auto it_user_id = std::find(streaming_users_ids_.begin(), streaming_users_ids_.end(), presence_update.rich_presence.user_id);
-    const auto ping_sent_ = (streaming_users_ids_.end() != it_user_id);
+    const auto it_user_id_and_message_id = streaming_users_ids_and_messages_ids_.find(presence_update.rich_presence.user_id);
+    const auto ping_sent_ = (streaming_users_ids_and_messages_ids_.cend() != it_user_id_and_message_id);
 
     if (activies.cend() == streaming_activity) {
       logger_->info("No Twitch streaming presence found for user '{}'", streaming_user_name);
       
       if (ping_sent_) {
-        streaming_users_ids_.erase(it_user_id);
-        //Todo
+        bot_.message_delete_sync(it_user_id_and_message_id->second, database_.GetServerChannelId(Database::ServerChannels::kStreams));
+        streaming_users_ids_and_messages_ids_.erase(it_user_id_and_message_id);
       }
 
       return;
@@ -136,10 +136,15 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
     }
     
     logger_->info("Found Twitch streaming presence update for user '{}'. Sending ping", streaming_user_name);
-    const auto ping_message = dpp::message(database_.GetServerChannelId(Database::ServerChannels::kStreams),
-                                           fmt::format("**@{}** está ap vivo jogando Super Mario 64! Assista em: **{}**", streaming_user_name, streaming_activity->url));
+
+    const auto streams_channel_id = database_.GetServerChannelId(Database::ServerChannels::kStreams);
+    const auto ping_message = dpp::message(streams_channel_id, fmt::format("**@{}** está ap vivo jogando Super Mario 64! Assista em: **{}**", streaming_user_name, streaming_activity->url));
     bot_.message_create(ping_message);
-      
+
+    const auto streams_channel = bot_.channel_get_sync(streams_channel_id);
+
+    streaming_users_ids_and_messages_ids_[presence_update.rich_presence.user_id] = streams_channel.last_message_id;
+
     logger_->info("Finished processing presence update for user '{}'", streaming_user_name);
   }));
 }
