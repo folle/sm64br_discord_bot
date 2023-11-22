@@ -3,14 +3,15 @@
   "dependencies": [
     "dpp",
     "fmt",
-    "spdlog",
+    "nlohmann-json",
+    {
+      "name": "libsodium",
+      "platform": "linux"
+    },
     {
       "name": "opus",
       "platform": "linux"
     },
-    {
-      "name": "libsodium",
-      "platform": "linux"
-    }
+    "spdlog"
   ]
 }

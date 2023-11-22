@@ -6,7 +6,7 @@
 
 int main(int argc, char** argv) {
   try {
-    Sm64BrDiscordBot bot;
+    Sm64brDiscordBot bot;
     bot.Start();
   }
   catch (const std::exception& exception) {
