@@ -135,7 +135,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
     logger_->info("Found Twitch streaming presence update for user '{}'. Sending ping", streaming_user_name);
 
     const auto ping_message = dpp::message(database_.GetServerChannelId(Database::ServerChannels::kStreams),
-                                           fmt::format("**{}** está ao vivo jogando Super Mario 64! Assista em: **{}**", streaming_user_name, streaming_activity->url));
+                                           fmt::format("**{}** estÃ¡ ao vivo jogando Super Mario 64! Assista em: **{}**", streaming_user_name, streaming_activity->url));
     try {
       const auto ping_message_id = bot_.message_create_sync(ping_message).id;
       streaming_users_ids_and_messages_ids_[presence_update.rich_presence.user_id] = ping_message_id;
