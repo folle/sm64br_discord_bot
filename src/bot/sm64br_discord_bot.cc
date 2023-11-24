@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <exception>
 #include <functional>
 #include <limits>
@@ -11,8 +12,7 @@
 
 
 namespace {
-  template<class Container>
-  void ClearFinishedFutures(Container& futures) {
+  template<class Container> void ClearFinishedFutures(Container& futures) {
     auto finished_futures_begin_ = std::remove_if(futures.begin(), futures.end(), [](const auto& future) {
       return (std::future_status::ready == future.wait_for(std::chrono::milliseconds(0)));
      });
@@ -107,8 +107,6 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
       //TODO
     }
 
-    logger_->info("Starting to process presence update for user '{}'", streaming_user_name);
-
     const auto& activies = presence_update.rich_presence.activities;
     const auto streaming_activity = std::find_if(activies.cbegin(), activies.cend(), [](const dpp::activity& activity) {
       return (activity.type == dpp::activity_type::at_streaming) && (activity.name == "Twitch") && (activity.state == "Super Mario 64");
@@ -118,11 +116,10 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
 
     const auto it_user_id_and_message_id = streaming_users_ids_and_messages_ids_.find(presence_update.rich_presence.user_id);
     const auto ping_sent_ = (streaming_users_ids_and_messages_ids_.cend() != it_user_id_and_message_id);
-
     if (activies.cend() == streaming_activity) {
-      logger_->info("No Twitch streaming presence found for user '{}'", streaming_user_name);
-      
       if (ping_sent_) {
+        logger_->info("User '{}', but ping was already sent", streaming_user_name);
+
         bot_.message_delete_sync(it_user_id_and_message_id->second, database_.GetServerChannelId(Database::ServerChannels::kStreams));
         streaming_users_ids_and_messages_ids_.erase(it_user_id_and_message_id);
       }
@@ -137,13 +134,15 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
     
     logger_->info("Found Twitch streaming presence update for user '{}'. Sending ping", streaming_user_name);
 
-    const auto streams_channel_id = database_.GetServerChannelId(Database::ServerChannels::kStreams);
-    const auto ping_message = dpp::message(streams_channel_id, fmt::format("**@{}** está ap vivo jogando Super Mario 64! Assista em: **{}**", streaming_user_name, streaming_activity->url));
-    bot_.message_create(ping_message);
-
-    const auto streams_channel = bot_.channel_get_sync(streams_channel_id);
-
-    streaming_users_ids_and_messages_ids_[presence_update.rich_presence.user_id] = streams_channel.last_message_id;
+    const auto ping_message = dpp::message(database_.GetServerChannelId(Database::ServerChannels::kStreams),
+                                           fmt::format("**@{}** estÃ¡ ao vivo jogando Super Mario 64! Assista em: **{}**", streaming_user_name, streaming_activity->url));
+    try {
+      const auto ping_message_id = bot_.message_create_sync(ping_message).id;
+      streaming_users_ids_and_messages_ids_[presence_update.rich_presence.user_id] = ping_message_id;
+    }
+    catch (const dpp::rest_exception& rest_exception) {
+      // TODO
+    }
 
     logger_->info("Finished processing presence update for user '{}'", streaming_user_name);
   }));
@@ -166,28 +165,35 @@ void Sm64brDiscordBot::OnReady(const dpp::ready_t& ready) {
 }
 
 void Sm64brDiscordBot::ClearStreamingStatus() noexcept {
-  dpp::snowflake highest_user_id = {};
+  dpp::snowflake highest_member_id = {};
   dpp::guild_member_map guild_members;
   do {
-    guild_members = bot_.guild_get_members_sync(database_.GetServerGuildId(), 1000, highest_user_id);
+    guild_members = bot_.guild_get_members_sync(database_.GetServerGuildId(), 1000, highest_member_id);
     for (auto& member : guild_members) {
-      if (highest_user_id < member.first) {
-        highest_user_id = member.first;
+      if (highest_member_id < member.first) {
+        highest_member_id = member.first;
       }
 
       const auto& roles = member.second.get_roles();
       const auto it_streaming_role =  std::find(roles.cbegin(), roles.cend(), database_.GetServerRoleId(Database::ServerRoles::kStreaming));
       if (it_streaming_role != roles.cend()) {
-        member.second.remove_role(*it_streaming_role);
+        bot_.guild_member_remove_role_sync(database_.GetServerGuildId(), member.second.user_id, *it_streaming_role);
       }
     }
   } while (!guild_members.empty());
 
+  dpp::snowflake earliest_streaming_message_id = std::numeric_limits<dpp::snowflake>::max();
   const auto streams_channel_id = database_.GetServerChannelId(Database::ServerChannels::kStreams);
+  dpp::message_map streaming_messages = bot_.messages_get_sync(streams_channel_id, {}, {}, {}, 100);
+  do {
+    for (const auto& message : streaming_messages) {
+      if (message.first < earliest_streaming_message_id) {
+        earliest_streaming_message_id = message.first;
+      }
 
-  dpp::channel streams_channel = bot_.channel_get_sync(streams_channel_id);
-  while (streams_channel.last_message_id) {
-    bot_.message_delete_sync(streams_channel.last_message_id, streams_channel_id);
-    streams_channel = bot_.channel_get_sync(streams_channel_id);
-  } 
+      bot_.message_delete_sync(message.first, streams_channel_id);
+    }
+
+    streaming_messages = bot_.messages_get_sync(streams_channel_id, {}, earliest_streaming_message_id, {}, 100);
+  } while (!streaming_messages.empty());
 }

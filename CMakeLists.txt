@@ -60,7 +60,7 @@ elseif(UNIX)
 target_link_libraries(${PROJECT_NAME} PRIVATE
   dpp::dpp
   fmt::fmt-header-only
-  OpenSSL::SSL
+  OpenSSL::SSL OpenSSL::Crypto
   Opus::opus
   spdlog::spdlog_header_only
   unofficial-sodium::sodium unofficial-sodium::sodium_config_public

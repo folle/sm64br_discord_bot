@@ -34,7 +34,7 @@ private:
 
   const Database database_ = Database("database/database.json");
 
-  dpp::cluster bot_ = dpp::cluster(database_.GetBotToken(), dpp::i_default_intents | dpp::i_guild_members | dpp::i_guild_presences | dpp::i_message_content);
+  dpp::cluster bot_ = dpp::cluster(database_.GetBotToken(), dpp::i_all_intents);
   
   MessageHandler message_handler_;
 
