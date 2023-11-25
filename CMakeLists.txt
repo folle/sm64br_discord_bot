@@ -38,33 +38,32 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   src/bot)
 
 
+find_package(cpprestsdk CONFIG REQUIRED)          # Interfacing with Google Sheets
 find_package(dpp CONFIG REQUIRED)                 # Interfacing with Discord
-find_package(fmt CONFIG REQUIRED)                 # Exceptions/Logging
-find_package(nlohmann_json CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)                 # Format logging
+find_package(nlohmann_json CONFIG REQUIRED)       # Database storage
+find_package(Opus CONFIG REQUIRED)                # DPP dependency
+find_package(OpenSSL REQUIRED)                    # DPP dependency
 find_package(spdlog CONFIG REQUIRED)              # Logging
+find_package(ZLIB REQUIRED)                       # DPP dependency
 
 if(UNIX)
-find_package(Opus CONFIG REQUIRED)                # DPP dependency
-find_package(OpenSSL REQUIRED)
 find_package(unofficial-sodium CONFIG REQUIRED)   # DPP dependency
-find_package(ZLIB REQUIRED)
-endif(UNIX)
+endif()
 
-if(WIN32)
 target_link_libraries(${PROJECT_NAME} PRIVATE
+  cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_brotli_internal
   dpp::dpp
   fmt::fmt-header-only
   nlohmann_json::nlohmann_json
-  spdlog::spdlog_header_only)
-elseif(UNIX)
-target_link_libraries(${PROJECT_NAME} PRIVATE
-  dpp::dpp
-  fmt::fmt-header-only
   OpenSSL::SSL OpenSSL::Crypto
   Opus::opus
   spdlog::spdlog_header_only
-  unofficial-sodium::sodium unofficial-sodium::sodium_config_public
   ZLIB::ZLIB)
+
+if(UNIX)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+  unofficial-sodium::sodium unofficial-sodium::sodium_config_public)
 endif()
 
 
