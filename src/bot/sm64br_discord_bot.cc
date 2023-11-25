@@ -116,7 +116,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
 
     const auto& streaming_user_name = streaming_user->format_username();
     const auto& activies = presence_update.rich_presence.activities;
-    const auto streaming_activity = std::find_if(activies.cbegin(), activies.cend(), [](const dpp::activity& activity) {
+    const auto streaming_activity = std::find_if(activies.cbegin(), activies.cend(), [](const auto& activity) {
       return (activity.type == dpp::activity_type::at_streaming) && (activity.name == "Twitch") && (activity.state == "Super Mario 64");
     });
     const auto is_streaming_sm64 = activies.cend() != streaming_activity;
@@ -127,8 +127,27 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
 
     const auto it_user_id_and_message_id = streaming_users_ids_and_messages_ids_.find(streaming_user_id);
     const auto streaming_message_sent_ = (streaming_users_ids_and_messages_ids_.cend() != it_user_id_and_message_id);
-    if (streaming_message_sent_) {
-      if (!is_streaming_sm64) {
+    if (is_streaming_sm64) {
+      if (!streaming_message_sent_) {
+        logger_->info("User '{}' started streaming Super Mario 64", streaming_user_name);
+
+        const auto streaming_message = dpp::message(database_.GetServerChannelId(Database::ServerChannels::kStreams),
+          fmt::format("**{}** está ao vivo jogando Super Mario 64! Assista em: **{}**", streaming_user_name, streaming_activity->url));
+        dpp::snowflake streaming_message_id = {};
+        try {
+          streaming_message_id = bot_.message_create_sync(streaming_message).id;
+        }
+        catch (const dpp::rest_exception& rest_exception) {
+          logger_->error("Failed to create streaming message while processing presence update. Exception: '{}'", rest_exception.what());
+          return;
+        }
+
+        bot_.guild_member_add_role(database_.GetServerGuildId(), streaming_user_id, database_.GetServerRoleId(Database::ServerRoles::kStreaming));
+
+        streaming_users_ids_and_messages_ids_[streaming_user_id] = streaming_message_id;
+      }
+    } else {
+      if (streaming_message_sent_) {
         logger_->info("User '{}' finished streaming Super Mario 64", streaming_user_name);
 
         bot_.message_delete(it_user_id_and_message_id->second, database_.GetServerChannelId(Database::ServerChannels::kStreams));
@@ -136,25 +155,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
 
         streaming_users_ids_and_messages_ids_.erase(it_user_id_and_message_id);
       }
-
-      return;
     }
-    
-    logger_->info("User '{}' started streaming Super Mario 64", streaming_user_name);
-
-    const auto streaming_message = dpp::message(database_.GetServerChannelId(Database::ServerChannels::kStreams),
-                                           fmt::format("**{}** estÃ¡ ao vivo jogando Super Mario 64! Assista em: **{}**", streaming_user_name, streaming_activity->url));
-    dpp::snowflake streaming_message_id = {};
-    try {
-      streaming_message_id = bot_.message_create_sync(streaming_message).id;
-    } catch (const dpp::rest_exception& rest_exception) {
-      logger_->error("Failed to create streaming message while processing presence update. Exception: '{}'", rest_exception.what());
-      return;
-    }
-
-    bot_.guild_member_add_role(database_.GetServerGuildId(), streaming_user_id, database_.GetServerRoleId(Database::ServerRoles::kStreaming));
-
-    streaming_users_ids_and_messages_ids_[streaming_user_id] = streaming_message_id;
   }));
 }
 
@@ -184,7 +185,7 @@ void Sm64brDiscordBot::ClearStreamingStatus() noexcept {
       members = bot_.guild_get_members_sync(database_.GetServerGuildId(), kMaxMembersPerCall, highest_member_id);
     } catch (const dpp::rest_exception& rest_exception) {
       logger_->error("Failed to get members while clearing streaming status. Exception: '{}'", rest_exception.what());
-      throw;
+      return;
     }
 
     for (auto& member : members) {
@@ -209,7 +210,7 @@ void Sm64brDiscordBot::ClearStreamingStatus() noexcept {
       streaming_messages = bot_.messages_get_sync(database_.GetServerChannelId(Database::ServerChannels::kStreams), {}, {}, {}, kMaxMessagesPerCall);
     } catch (const dpp::rest_exception& rest_exception) {
       logger_->error("Failed to get streaming messages while clearing streaming status. Exception: '{}'", rest_exception.what());
-      throw;
+      return;
     }
 
     for (const auto& streaming_message : streaming_messages) {
