@@ -52,18 +52,18 @@ find_package(unofficial-sodium CONFIG REQUIRED)   # DPP dependency
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-  cpprestsdk::cpprest cpprestsdk::cpprestsdk_zlib_internal cpprestsdk::cpprestsdk_brotli_internal
+  cpprestsdk::cpprest
   dpp::dpp
   fmt::fmt-header-only
   nlohmann_json::nlohmann_json
-  OpenSSL::SSL OpenSSL::Crypto
+  OpenSSL::SSL
   Opus::opus
   spdlog::spdlog_header_only
   ZLIB::ZLIB)
 
 if(UNIX)
 target_link_libraries(${PROJECT_NAME} PRIVATE
-  unofficial-sodium::sodium unofficial-sodium::sodium_config_public)
+  unofficial-sodium::sodium)
 endif()
 
 
