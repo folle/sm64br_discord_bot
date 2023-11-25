@@ -8,13 +8,14 @@
 
 class Database final {
 public:
-  enum class ServerChannels {
+  enum class Channels {
     kNone,
     kUpdates,
     kStreams,
+    kPbSubmission
   };
 
-  enum class ServerRoles {
+  enum class Roles {
     kNone,
     kModerator,
     kStreaming
@@ -27,16 +28,16 @@ public:
 
   std::string GetBotToken() const noexcept;
 
-  dpp::snowflake GetServerGuildId() const noexcept;
-  dpp::snowflake GetServerRoleId(const ServerRoles role) const noexcept;
-  dpp::snowflake GetServerChannelId(const ServerChannels channel) const noexcept;
+  dpp::snowflake GetGuildId() const noexcept;
+  dpp::snowflake GetRoleId(const Roles role) const noexcept;
+  dpp::snowflake GetChannelId(const Channels channel) const noexcept;
 
 private:
   const std::shared_ptr<spdlog::async_logger> logger_ = Logger::Get().Create("Database");
 
   std::string bot_token_;
 
-  dpp::snowflake server_guild_id_;
-  std::map<ServerRoles, dpp::snowflake> server_roles_ids_;
-  std::map<ServerChannels, dpp::snowflake> server_channels_ids_;
+  dpp::snowflake guild_id_;
+  std::map<Roles, dpp::snowflake> server_guild_id_;
+  std::map<Channels, dpp::snowflake> channels_ids_;
 };
