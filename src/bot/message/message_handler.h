@@ -1,11 +1,9 @@
 #pragma once
 
-#include <future>
-#include <list>
-#include <memory>
 #include <dpp/dpp.h>
 
 #include "database/database.h"
+#include "google_sheets/google_sheets.h"
 #include "logger/logger.h"
 
 
@@ -29,4 +27,6 @@ private:
   const std::shared_ptr<dpp::cluster> bot_;
 
   std::list<std::future<void>> streaming_message_futures_;
+
+  GoogleSheets google_sheets_ = GoogleSheets("database/google_oauth_client_secret.json");
 };

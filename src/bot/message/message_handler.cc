@@ -55,9 +55,8 @@ void MessageHandler::Process(const dpp::message& message) noexcept {
     return;
   }
 
-
+  // TODO:
   // star of the week
-
   // beginner dw reds 
 }
 
@@ -93,5 +92,6 @@ void MessageHandler::ProcessStreamingMessage(const dpp::snowflake message_id) no
 }
 
 void MessageHandler::ProcessPbSubmissionMessage(const dpp::snowflake message_id, const std::string& message) const noexcept {
-
+  // TODO:
+  //google_sheets_
 }

@@ -27,8 +27,10 @@ add_executable(${PROJECT_NAME}
   src/bot/sm64br_discord_bot.h
   src/bot/database/database.cc
   src/bot/database/database.h
-  src/bot/message_handler/message_handler.cc
-  src/bot/message_handler/message_handler.h
+  src/bot/message/message_handler.cc
+  src/bot/message/message_handler.h
+  src/google_sheets/google_sheets.cc
+  src/google_sheets/google_sheets.h
   src/logger/logger.cc
   src/logger/logger.h)
 
@@ -62,8 +64,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
   ZLIB::ZLIB)
 
 if(UNIX)
-target_link_libraries(${PROJECT_NAME} PRIVATE
-  unofficial-sodium::sodium)
+target_link_libraries(${PROJECT_NAME} PRIVATE unofficial-sodium::sodium)
 endif()
 
 
@@ -72,6 +73,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   CXX_STANDARD_REQUIRED ON)
 
 
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/database/database.json")
-  configure_file(sample/database.json "${CMAKE_BINARY_DIR}/database/database.json" COPYONLY)
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/database/discord_server.json")
+  configure_file(sample/discord_server.json "${CMAKE_BINARY_DIR}/database/discord_server.json" COPYONLY)
+endif()
+
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/database/google_oauth_client_secret.json")
+  configure_file(sample/google_oauth_client_secret.json "${CMAKE_BINARY_DIR}/database/google_oauth_client_secret.json" COPYONLY)
 endif()

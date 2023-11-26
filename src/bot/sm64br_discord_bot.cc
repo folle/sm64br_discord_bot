@@ -1,15 +1,5 @@
 #include "sm64br_discord_bot.h"
 
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <exception>
-#include <functional>
-#include <limits>
-#include <regex>
-#include <sstream>
-#include <fmt/format.h>
-
 
 Sm64brDiscordBot::Sm64brDiscordBot() {
   bot_->on_log(std::bind(&Sm64brDiscordBot::OnLog, this, std::placeholders::_1));
