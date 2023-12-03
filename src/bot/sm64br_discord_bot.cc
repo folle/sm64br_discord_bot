@@ -91,7 +91,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
         logger_->info("User '{}' started streaming Super Mario 64", streaming_username);
 
         const auto streaming_message = dpp::message(database_->GetChannelId(Database::Channels::kStreams),
-                                                    fmt::format("**{}** está ao vivo jogando Super Mario 64! Assista em: {}", 
+                                                    fmt::format("**{}** encontra-se ao vivo jogando Super Mario 64! Assista em: {}", 
                                                                 streaming_username,
                                                                 streaming_activity->url));
         dpp::snowflake streaming_message_id = {};
