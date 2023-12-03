@@ -10,19 +10,19 @@ namespace{
   }
 
   bool GetCategory(const std::string& data, std::string& category) {
-
+    return true;
   }
 
   bool GetPlatform(const std::string& data, std::string& category) {
-
+    return true;
   }
 
   bool GetTime(const std::string& data, std::string& category) {
-
+    return true;
   }
 
   bool GetVod(const std::string& data, std::string& category) {
-
+    return true;
   }
 
 
@@ -113,7 +113,7 @@ void MessageHandler::ProcessPbSubmissionMessage(const dpp::snowflake user_id, co
   logger_->info("Received PB submission message '{}'", message);
 
   std::vector<std::string> pb_submission_lines;
-  boost::split(pb_submission_lines, message, boost::is_any_of('\n'));
+  boost::split(pb_submission_lines, message, boost::is_any_of("\n"));
 
   std::string category;
   std::string platform;
@@ -122,7 +122,7 @@ void MessageHandler::ProcessPbSubmissionMessage(const dpp::snowflake user_id, co
   std::string vod;
   for (auto& line : pb_submission_lines) {
     std::vector<std::string> key_and_data;
-    boost::split(key_and_data, line, boost::is_any_of(':'));
+    boost::split(key_and_data, line, boost::is_any_of(":"));
 
     constexpr auto kKeyAndDataSize = 2;
     if (kKeyAndDataSize != key_and_data.size()) {
