@@ -12,7 +12,7 @@ public:
   GoogleSheets(std::shared_ptr<Database> database);
 
 private:
-  [[nodiscard]] bool GetBearerAccessToken(std::wstring& access_token) const noexcept;
+  [[nodiscard]] bool GetBearerAccessToken(std::string& access_token) const noexcept;
 
 private:
   const std::shared_ptr<spdlog::async_logger> logger_ = Logger::Get().Create("Google Sheets");

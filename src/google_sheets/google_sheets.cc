@@ -10,7 +10,7 @@ GoogleSheets::GoogleSheets(std::shared_ptr<Database> database) :
   database_(std::move(database)) {
 }
 
-[[nodiscard]] bool GoogleSheets::GetBearerAccessToken(std::wstring& access_token) const noexcept {
+[[nodiscard]] bool GoogleSheets::GetBearerAccessToken(std::string& access_token) const noexcept {
   access_token.clear();
 
   const auto current_time = std::chrono::system_clock::now();
@@ -25,11 +25,11 @@ GoogleSheets::GoogleSheets(std::shared_ptr<Database> database) :
     .sign(jwt::algorithm::rs256("", database_->GetGooglePrivateKey()));
 
   web::json::value jwt_token_post_data;
-  jwt_token_post_data[L"grant_type"] = web::json::value::string(L"urn:ietf:params:oauth:grant-type:jwt-bearer");
-  jwt_token_post_data[L"assertion"] = web::json::value::string(std::wstring(jwt_token.begin(), jwt_token.end()));
+  jwt_token_post_data["grant_type"] = web::json::value::string("urn:ietf:params:oauth:grant-type:jwt-bearer");
+  jwt_token_post_data["assertion"] = web::json::value::string(jwt_token);
 
-  auto jwt_http_client = web::http::client::http_client(L"https://oauth2.googleapis.com/token");
-  const auto jwt_request = jwt_http_client.request(web::http::methods::POST, L"", jwt_token_post_data).get();
+  auto jwt_http_client = web::http::client::http_client("https://oauth2.googleapis.com/token");
+  const auto jwt_request = jwt_http_client.request(web::http::methods::POST, "", jwt_token_post_data).get();
   if (web::http::status_codes::OK != jwt_request.status_code()) {
     logger_->error("Access token POST request failed with status code '{}'", jwt_request.status_code());
     return false;
@@ -37,7 +37,7 @@ GoogleSheets::GoogleSheets(std::shared_ptr<Database> database) :
 
   const auto access_token_json = jwt_request.extract_json().get();
 
-  constexpr auto kExpiresInField = L"expires_in";
+  constexpr auto kExpiresInField = "expires_in";
   if (!access_token_json.has_integer_field(kExpiresInField)) {
     logger_->error("Access token json doesn't have expiration field");
     return false;
@@ -49,7 +49,7 @@ GoogleSheets::GoogleSheets(std::shared_ptr<Database> database) :
     return false;
   }
 
-  constexpr auto kTokenTypeField = L"token_type";
+  constexpr auto kTokenTypeField = "token_type";
   if (!access_token_json.has_string_field(kTokenTypeField)) {
     logger_->error("Access token json doesn't have token type field");
     return false;
@@ -61,7 +61,7 @@ GoogleSheets::GoogleSheets(std::shared_ptr<Database> database) :
     return false;
   }
 
-  constexpr auto kAccessTokenField = L"access_token";
+  constexpr auto kAccessTokenField = "access_token";
   if (!access_token_json.has_string_field(kAccessTokenField)) {
     logger_->error("Access token json doesn't have token field");
     return false;
