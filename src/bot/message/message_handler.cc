@@ -179,5 +179,5 @@ void MessageHandler::ProcessPbSubmissionMessage(const dpp::snowflake user_id, co
   // send dm
 //  google_sheets_.AddPbToLeaderboard(user_id, username, );
 
-  bot_->message_delete(message_id, database_->GetChannelId(Database::Channels::kPbSubmission));
+  //bot_->message_delete(message_id, database_->GetChannelId(Database::Channels::kPbSubmission));
 }
