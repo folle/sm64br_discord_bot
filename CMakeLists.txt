@@ -40,20 +40,25 @@ target_include_directories(${PROJECT_NAME} PRIVATE
   src/bot)
 
 
-find_package(cpprestsdk CONFIG REQUIRED)          # Interfacing with Google Sheets
-find_package(dpp CONFIG REQUIRED)                 # Interfacing with Discord
-find_package(fmt CONFIG REQUIRED)                 # Format logging
-find_package(nlohmann_json CONFIG REQUIRED)       # Database storage
-find_package(Opus CONFIG REQUIRED)                # DPP dependency
-find_package(OpenSSL REQUIRED)                    # DPP dependency
-find_package(spdlog CONFIG REQUIRED)              # Logging
-find_package(ZLIB REQUIRED)                       # DPP dependency
+find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")                                    # Interfacing with Google Sheets
+target_include_directories(${PROJECT_NAME} PRIVATE ${JWT_CPP_INCLUDE_DIRS})
+
+find_package(Boost REQUIRED)                                                        # String handling
+find_package(cpprestsdk CONFIG REQUIRED)                                            # Interfacing with Google Sheets
+find_package(dpp CONFIG REQUIRED)                                                   # Interfacing with Discord
+find_package(fmt CONFIG REQUIRED)                                                   # Format logging
+find_package(nlohmann_json CONFIG REQUIRED)                                         # Database storage
+find_package(Opus CONFIG REQUIRED)                                                  # DPP dependency
+find_package(OpenSSL REQUIRED)                                                      # DPP dependency
+find_package(spdlog CONFIG REQUIRED)                                                # Logging
+find_package(ZLIB REQUIRED)                                                         # DPP dependency
 
 if(UNIX)
-find_package(unofficial-sodium CONFIG REQUIRED)   # DPP dependency
+find_package(unofficial-sodium CONFIG REQUIRED)                                     # DPP dependency
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+  Boost::boost
   cpprestsdk::cpprest
   dpp::dpp
   fmt::fmt-header-only
@@ -73,10 +78,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   CXX_STANDARD_REQUIRED ON)
 
 
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/database/discord_server.json")
-  configure_file(sample/discord_server.json "${CMAKE_BINARY_DIR}/database/discord_server.json" COPYONLY)
-endif()
-
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/database/google_oauth_client_secret.json")
-  configure_file(sample/google_oauth_client_secret.json "${CMAKE_BINARY_DIR}/database/google_oauth_client_secret.json" COPYONLY)
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/database/database.json")
+  configure_file(sample/database.json "${CMAKE_BINARY_DIR}/database/database.json" COPYONLY)
 endif()

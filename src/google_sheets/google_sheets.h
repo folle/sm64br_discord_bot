@@ -1,8 +1,6 @@
 #pragma once
 
-#include <fmt/format.h>
-#include <cpprest/http_client.h>
-
+#include "database/database.h"
 #include "logger/logger.h"
 
 
@@ -11,11 +9,13 @@ public:
   GoogleSheets() = delete;
   ~GoogleSheets() = default;
 
-  GoogleSheets(const std::string& client_secret_file_path);
+  GoogleSheets(std::shared_ptr<Database> database);
+
+private:
+  [[nodiscard]] bool GetBearerAccessToken(std::wstring& access_token) const noexcept;
 
 private:
   const std::shared_ptr<spdlog::async_logger> logger_ = Logger::Get().Create("Google Sheets");
 
-  web::http::client::http_client_config http_config_;
-  std::unique_ptr<web::http::oauth2::experimental::oauth2_config> oauth2_config_;
+  const std::shared_ptr<Database> database_;
 };

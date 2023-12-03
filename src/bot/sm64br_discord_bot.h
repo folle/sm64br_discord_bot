@@ -24,7 +24,7 @@ private:
 private:
   const std::shared_ptr<spdlog::async_logger> logger_ = Logger::Get().Create("SM64BR Discord Bot");
 
-  const std::shared_ptr<Database> database_ = std::make_shared<Database>("database/discord_server.json");
+  const std::shared_ptr<Database> database_ = std::make_shared<Database>("database/database.json");
 
   const std:: shared_ptr<dpp::cluster> bot_ = std::make_shared<dpp::cluster>(database_->GetBotToken(), dpp::i_all_intents);
   

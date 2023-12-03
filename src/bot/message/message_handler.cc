@@ -1,17 +1,41 @@
 #include "message_handler.h"
 
+#include <boost/algorithm/string.hpp>
+
 
 namespace{
   std::string RemoveCommandHeader(const std::string& message) {
     constexpr std::size_t kCommandLength = 3;
     return message.substr(kCommandLength, message.size() - kCommandLength);
   }
+
+  bool GetCategory(const std::string& data, std::string& category) {
+
+  }
+
+  bool GetPlatform(const std::string& data, std::string& category) {
+
+  }
+
+  bool GetTime(const std::string& data, std::string& category) {
+
+  }
+
+  bool GetVod(const std::string& data, std::string& category) {
+
+  }
+
+
+  //Categoria: [0 Star / 1 Star / 16 Star(No LBLJ) / 16 Star(LBLJ) / 70 Star / 120 Star / All Signs / 31 Star]
+  //Plataforma : [N64 / EMU / VC / CELL / PC]
+  //Controle : [controle]
+  //Tempo : [1:23 : 45 / 12 : 34 / 1 : 23]
+  //VOD : [link]
 }
 
 
-MessageHandler::MessageHandler(const std::shared_ptr<Database> database, const std::shared_ptr<dpp::cluster> bot) noexcept :
-  database_(database), bot_(bot) {
-
+MessageHandler::MessageHandler(std::shared_ptr<Database> database, std::shared_ptr<dpp::cluster> bot) noexcept :
+  database_(std::move(database)), bot_(std::move(bot)) {
 }
 
 void MessageHandler::Process(const dpp::message& message) noexcept {
@@ -29,14 +53,12 @@ void MessageHandler::Process(const dpp::message& message) noexcept {
                                           [this](const auto& role) { return (role == database_->GetRoleId(Database::Roles::kModerator)); });
   const auto from_bot = message.author.is_bot();
 
-  // Announcement message
   const auto is_announcement_message = !message.content.rfind("!a ", 0);
   if (is_announcement_message && from_moderator && !from_bot) {
     ProcessAnnouncementMessage(message.channel_id, message.content);
     return;
   }
 
-  // General Message
   const auto is_general_message = !message.content.rfind("!m ", 0);
   if (is_general_message && from_moderator && !from_bot) {
     ProcessGeneralMessage(message.channel_id, message.content);
@@ -51,7 +73,7 @@ void MessageHandler::Process(const dpp::message& message) noexcept {
 
   const auto is_pb_submission_message = (message.channel_id == database_->GetChannelId(Database::Channels::kPbSubmission));
   if (is_pb_submission_message && !from_bot) {
-    ProcessPbSubmissionMessage(message.id, message.content);
+    ProcessPbSubmissionMessage(message.author.id, message.author.format_username(), message.id, message.content);
     return;
   }
 
@@ -77,21 +99,85 @@ void MessageHandler::ProcessGeneralMessage(const dpp::snowflake channel_id, cons
 }
 
 void MessageHandler::ProcessStreamingMessage(const dpp::snowflake message_id) noexcept {
-  streaming_message_futures_.remove_if([](const auto& future) { return (std::future_status::ready == future.wait_for(std::chrono::milliseconds(0))); });
-
   logger_->info("Received streaming message with id '{}'", message_id);
 
-  streaming_message_futures_.push_back(std::async(std::launch::async, [this, message_id]() {
-    constexpr auto kStreamingMessageDeleteDelay = std::chrono::hours(6);
-    std::this_thread::sleep_for(kStreamingMessageDeleteDelay);
+  constexpr auto kStreamingMessageDeleteDelay = std::chrono::hours(6);
+  std::this_thread::sleep_for(kStreamingMessageDeleteDelay);
 
-    bot_->message_delete(message_id, database_->GetChannelId(Database::Channels::kStreams));
+  bot_->message_delete(message_id, database_->GetChannelId(Database::Channels::kStreams));
 
-    logger_->info("Deleted streaming message with id '{}'", message_id);
-  }));
+  logger_->info("Deleted streaming message with id '{}'", message_id);
 }
 
-void MessageHandler::ProcessPbSubmissionMessage(const dpp::snowflake message_id, const std::string& message) const noexcept {
-  // TODO:
-  //google_sheets_
+void MessageHandler::ProcessPbSubmissionMessage(const dpp::snowflake user_id, const std::string& username, const dpp::snowflake message_id, const std::string& message) const noexcept {
+  logger_->info("Received PB submission message '{}'", message);
+
+  std::vector<std::string> pb_submission_lines;
+  boost::split(pb_submission_lines, message, boost::is_any_of('\n'));
+
+  std::string category;
+  std::string platform;
+  std::string controller;
+  std::string time;
+  std::string vod;
+  for (auto& line : pb_submission_lines) {
+    std::vector<std::string> key_and_data;
+    boost::split(key_and_data, line, boost::is_any_of(':'));
+
+    constexpr auto kKeyAndDataSize = 2;
+    if (kKeyAndDataSize != key_and_data.size()) {
+      logger_->error("Invalid line in PB submission message '{}'", line);
+      continue;
+    }
+
+    constexpr auto kKeyIndex = 0;
+    constexpr auto kDataIndex = 1;
+    auto& key = key_and_data[kKeyIndex];
+    auto& data = key_and_data[kDataIndex];
+
+    boost::algorithm::to_lower(key);
+    boost::algorithm::trim(data);
+
+    if (key.contains("categoria")) {
+      if (!::GetCategory(data, category)) {
+        logger_->error("Invalid category in PB submission message '{}'", line);
+      }
+      continue;
+    }
+
+    if (key.contains("plataforma")) {
+      if (!::GetPlatform(data, platform)) {
+        logger_->error("Invalid platform in PB submission message '{}'", line);
+      }
+      continue;
+    }
+
+    if (key.contains("controle")) {
+      controller = data;
+      continue;
+    }
+
+    if (key.contains("tempo")) {
+      if (!::GetTime(data, time)) {
+        logger_->error("Invalid time in PB submission message '{}'", line);
+      }
+      continue;
+    }
+
+    if (key.contains("vod")) {
+      if (!::GetVod(data, vod)) {
+        logger_->error("Invalid VOD in PB submission message '{}'", line);
+      }
+      continue;
+    }
+  }
+
+  if (controller.empty()) {
+    logger_->error("No controller specified in PB submission message");
+  }
+
+  // send dm
+//  google_sheets_.AddPbToLeaderboard(user_id, username, );
+
+  bot_->message_delete(message_id, database_->GetChannelId(Database::Channels::kPbSubmission));
 }

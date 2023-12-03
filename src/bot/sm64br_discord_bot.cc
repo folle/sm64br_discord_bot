@@ -73,7 +73,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
       return;
     }
 
-    const auto& streaming_user_name = streaming_user->format_username();
+    const auto& streaming_username = streaming_user->format_username();
     const auto& activies = presence_update.rich_presence.activities;
     const auto streaming_activity = std::find_if(activies.cbegin(), activies.cend(), [](const auto& activity) {
       return (activity.type == dpp::activity_type::at_streaming) && (activity.name == "Twitch") && (activity.state == "Super Mario 64");
@@ -82,16 +82,18 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
 
     const auto& streaming_user_id = presence_update.rich_presence.user_id;
 
-    const std::lock_guard<std::mutex> lock(on_presence_update_mutex_);
+    const std::lock_guard<std::mutex> mutex_lock(on_presence_update_mutex_);
 
     const auto it_user_id_and_message_id = streaming_users_ids_and_messages_ids_.find(streaming_user_id);
     const auto streaming_message_sent_ = (streaming_users_ids_and_messages_ids_.cend() != it_user_id_and_message_id);
     if (is_streaming_sm64) {
       if (!streaming_message_sent_) {
-        logger_->info("User '{}' started streaming Super Mario 64", streaming_user_name);
+        logger_->info("User '{}' started streaming Super Mario 64", streaming_username);
 
         const auto streaming_message = dpp::message(database_->GetChannelId(Database::Channels::kStreams),
-          fmt::format("**{}** está ao vivo jogando Super Mario 64! Assista em: {}", streaming_user_name, streaming_activity->url));
+                                                    fmt::format("**{}** está ao vivo jogando Super Mario 64! Assista em: {}", 
+                                                                streaming_username,
+                                                                streaming_activity->url));
         dpp::snowflake streaming_message_id = {};
         try {
           streaming_message_id = bot_->message_create_sync(streaming_message).id;
@@ -107,7 +109,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
       }
     } else {
       if (streaming_message_sent_) {
-        logger_->info("User '{}' finished streaming Super Mario 64", streaming_user_name);
+        logger_->info("User '{}' finished streaming Super Mario 64", streaming_username);
 
         bot_->message_delete(it_user_id_and_message_id->second, database_->GetChannelId(Database::Channels::kStreams));
         bot_->guild_member_remove_role(database_->GetGuildId(), streaming_user_id, database_->GetRoleId(Database::Roles::kStreaming));

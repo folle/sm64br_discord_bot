@@ -1,9 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "dependencies": [
+    "boost-algorithm",
     "cpprestsdk",
     "dpp",
     "fmt",
+    "jwt-cpp",
     "nlohmann-json",
     {
       "name": "libsodium",

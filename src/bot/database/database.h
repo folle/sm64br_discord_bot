@@ -32,12 +32,20 @@ public:
   dpp::snowflake GetRoleId(const Roles role) const noexcept;
   dpp::snowflake GetChannelId(const Channels channel) const noexcept;
 
+  std::string GetGoogleClientEmail() const noexcept;
+  std::string GetGooglePrivateKeyId() const noexcept;
+  std::string GetGooglePrivateKey() const noexcept;
+
 private:
   const std::shared_ptr<spdlog::async_logger> logger_ = Logger::Get().Create("Database");
 
   std::string bot_token_;
 
   dpp::snowflake guild_id_;
-  std::map<Roles, dpp::snowflake> server_guild_id_;
+  std::map<Roles, dpp::snowflake> roles_ids_;
   std::map<Channels, dpp::snowflake> channels_ids_;
+
+  std::string google_client_email_;
+  std::string google_private_key_id_;
+  std::string google_private_key_;
 };

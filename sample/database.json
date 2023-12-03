@@ -13,5 +13,10 @@
       "moderator": 1018992321632686170,
       "streaming": 1176297176645763162
     }
+  },
+  "google_service_account": {
+    "client_email": "your_client_email",
+    "private_key_id": "your_private_key_id",
+    "private_key": "your_private_key"
   }
 }
