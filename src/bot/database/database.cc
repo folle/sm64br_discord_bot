@@ -39,23 +39,23 @@ Database::Database(const std::string& database_file_path) {
   std::ifstream database_file(database_file_path);
   const auto database_json = nlohmann::json::parse(database_file);
 
-  const auto bot_data = database_json["bot"];
+  const auto& bot_data = database_json["bot"];
   bot_token_ = bot_data["token"].get<std::string>();
 
-  const auto server_data = database_json["server"];
+  const auto& server_data = database_json["server"];
   guild_id_ = server_data["guild"].get<dpp::snowflake>();
 
   const auto& roles_json = server_data["roles"];
-  for (auto role = roles_json.begin(); role != roles_json.end(); ++role) {
-    roles_ids_[::ServerRoleStringToEnum(role.key())] = role.value().get<dpp::snowflake>();
+  for (auto it_role = roles_json.begin(); it_role != roles_json.end(); ++it_role) {
+    roles_ids_[::ServerRoleStringToEnum(it_role.key())] = it_role.value().get<dpp::snowflake>();
   }
 
   const auto& channels_json = server_data["channels"];
-  for (auto channel = channels_json.begin(); channel != channels_json.end(); ++channel) {
-    channels_ids_[::ServerChannelStringToEnum(channel.key())] = channel.value().get<dpp::snowflake>();
+  for (auto it_channel = channels_json.begin(); it_channel != channels_json.end(); ++it_channel) {
+    channels_ids_[::ServerChannelStringToEnum(it_channel.key())] = it_channel.value().get<dpp::snowflake>();
   }
 
-  const auto google_service_account_data = database_json["google_service_account"];
+  const auto& google_service_account_data = database_json["google_service_account"];
   google_client_email_ = google_service_account_data["client_email"].get<std::string>();
   google_private_key_id_ = google_service_account_data["private_key_id"].get<std::string>();
   google_private_key_ = google_service_account_data["private_key"].get<std::string>();

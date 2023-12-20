@@ -2,12 +2,12 @@
 
 
 Sm64brDiscordBot::Sm64brDiscordBot() {
-  bot_->on_log(std::bind(&Sm64brDiscordBot::OnLog, this, std::placeholders::_1));
-  bot_->on_ready(std::bind(&Sm64brDiscordBot::OnReady, this, std::placeholders::_1));
-  bot_->on_message_create(std::bind(&Sm64brDiscordBot::OnMessageCreate, this, std::placeholders::_1));
-  bot_->on_presence_update(std::bind(&Sm64brDiscordBot::OnPresenceUpdate, this, std::placeholders::_1));
-  bot_->on_guild_member_add(std::bind(&Sm64brDiscordBot::OnGuildMemberAdd, this, std::placeholders::_1));
-  bot_->on_guild_member_remove(std::bind(&Sm64brDiscordBot::OnGuildMemberRemove, this, std::placeholders::_1));
+  bot_->on_log([this](const dpp::log_t& event) { OnLog(event); });
+  bot_->on_ready([this](const dpp::ready_t& ready) { OnReady(ready); });
+  bot_->on_message_create([this](const dpp::message_create_t& message_create) { OnMessageCreate(message_create); });
+  bot_->on_presence_update([this](const dpp::presence_update_t& presence_update) { OnPresenceUpdate(presence_update); });
+  bot_->on_guild_member_add([this](const dpp::guild_member_add_t& guild_member_add) { OnGuildMemberAdd(guild_member_add); });
+  bot_->on_guild_member_remove([this](const dpp::guild_member_remove_t& guild_member_remove) { OnGuildMemberRemove(guild_member_remove); });
 
   ClearStreamingStatus();
 

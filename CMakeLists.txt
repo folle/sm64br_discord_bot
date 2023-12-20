@@ -22,17 +22,17 @@ project(sm64br_discord_bot VERSION 1.0 DESCRIPTION "SM64BR Discord Bot")
 
 # Bot project
 add_executable(${PROJECT_NAME}
-  src/main.cc
-  src/bot/sm64br_discord_bot.cc
-  src/bot/sm64br_discord_bot.h
-  src/bot/database/database.cc
-  src/bot/database/database.h
-  src/bot/message/message_handler.cc
-  src/bot/message/message_handler.h
-  src/google_sheets/google_sheets.cc
-  src/google_sheets/google_sheets.h
-  src/logger/logger.cc
-  src/logger/logger.h)
+               src/main.cc
+               src/bot/sm64br_discord_bot.cc
+               src/bot/sm64br_discord_bot.h
+               src/bot/database/database.cc
+               src/bot/database/database.h
+               src/bot/message/message_handler.cc
+               src/bot/message/message_handler.h
+               src/google_sheets/google_sheets.cc
+               src/google_sheets/google_sheets.h
+               src/logger/logger.cc
+               src/logger/logger.h)
 
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -58,15 +58,15 @@ find_package(unofficial-sodium CONFIG REQUIRED)                                 
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-  Boost::boost
-  cpprestsdk::cpprest
-  dpp::dpp
-  fmt::fmt-header-only
-  nlohmann_json::nlohmann_json
-  OpenSSL::SSL
-  Opus::opus
-  spdlog::spdlog_header_only
-  ZLIB::ZLIB)
+                      Boost::boost
+                      cpprestsdk::cpprest
+                      dpp::dpp
+                      fmt::fmt-header-only
+                      nlohmann_json::nlohmann_json
+                      OpenSSL::SSL
+                      Opus::opus
+                      spdlog::spdlog_header_only
+                      ZLIB::ZLIB)
 
 if(UNIX)
 target_link_libraries(${PROJECT_NAME} PRIVATE unofficial-sodium::sodium)
@@ -74,8 +74,8 @@ endif()
 
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-  CXX_STANDARD 23
-  CXX_STANDARD_REQUIRED ON)
+                      CXX_STANDARD 23
+                      CXX_STANDARD_REQUIRED ON)
 
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/database/database.json")
