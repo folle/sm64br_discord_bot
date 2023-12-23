@@ -10,6 +10,14 @@ GoogleSheets::GoogleSheets(std::shared_ptr<Database> database) :
   database_(std::move(database)) {
 }
 
+bool GoogleSheets::AddPbToLeaderboard() {
+  const std::scoped_lock<std::mutex> mutex_lock(pb_leaderboard_mutex_);
+
+  //if (const auto got_token = GetBearerAccessToken
+
+  return true;
+}
+
 #ifdef _WIN32
 [[nodiscard]] bool GoogleSheets::GetBearerAccessToken(std::wstring& access_token) const noexcept {
 #else
@@ -98,6 +106,8 @@ GoogleSheets::GoogleSheets(std::shared_ptr<Database> database) :
 }
 
 //{
+// 
+// MUTEX LOCK
 //  web::http::client::http_client sheets_http_client(L"https://sheets.googleapis.com?access_token=1q");
 //  auto s= client2.request(web::http::methods::DEL).get().extract_json().get().to_string();
 //  auto b = 2;

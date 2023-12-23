@@ -82,7 +82,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(const dpp::presence_update_t& presence_u
 
     const auto& streaming_user_id = presence_update.rich_presence.user_id;
 
-    const std::lock_guard<std::mutex> mutex_lock(on_presence_update_mutex_);
+    const std::scoped_lock<std::mutex> mutex_lock(on_presence_update_mutex_);
 
     const auto it_user_id_and_message_id = streaming_users_ids_and_messages_ids_.find(streaming_user_id);
     const auto streaming_message_sent_ = (streaming_users_ids_and_messages_ids_.cend() != it_user_id_and_message_id);
