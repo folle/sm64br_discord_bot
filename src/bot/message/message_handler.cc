@@ -1,5 +1,7 @@
 #include "message_handler.h"
 
+#include <regex>
+
 #include <boost/algorithm/string.hpp>
 
 
@@ -67,7 +69,7 @@ void MessageHandler::Process(const dpp::message& message) noexcept {
 
   const auto is_streaming_message = (message.channel_id == database_->GetChannelId(Database::Channels::kStreams));
   if (is_streaming_message && !from_bot) {
-    ProcessStreamingMessage(message.id);
+    ProcessStreamingMessage(message.author.id, message.id, message.content);
     return;
   }
 
@@ -98,11 +100,18 @@ void MessageHandler::ProcessGeneralMessage(const dpp::snowflake channel_id, cons
   bot_->message_create(dpp::message(channel_id, general_message));
 }
 
-void MessageHandler::ProcessStreamingMessage(const dpp::snowflake message_id) noexcept {
+void MessageHandler::ProcessStreamingMessage(const dpp::snowflake user_id, const dpp::snowflake message_id, const std::string& message) noexcept {
   logger_->info("Received streaming message with id '{}'", message_id);
 
-  constexpr auto kStreamingMessageDeleteDelay = std::chrono::hours(6);
-  std::this_thread::sleep_for(kStreamingMessageDeleteDelay);
+  const auto kUrlRegex = std::regex("((http|https)://)(www.)?[a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)");
+  if (std::regex_search(message, kUrlRegex)) {
+    constexpr auto kStreamingMessageDeleteDelay = std::chrono::hours(6);
+    std::this_thread::sleep_for(kStreamingMessageDeleteDelay);
+  }
+  else {
+    const auto invalid_streaming_message = "Por favor, poste apenas mensagens com uma URL para uma stream de Super Mario 64 no canal **#streams**!";
+    bot_->direct_message_create(user_id, dpp::message(invalid_streaming_message));
+  }
 
   bot_->message_delete(message_id, database_->GetChannelId(Database::Channels::kStreams));
 
