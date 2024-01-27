@@ -36,8 +36,8 @@ add_executable(${PROJECT_NAME}
 
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-  src
-  src/bot)
+                           src
+                           src/bot)
 
 
 find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")                                    # Interfacing with Google Sheets
