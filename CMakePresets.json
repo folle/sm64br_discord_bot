@@ -2,8 +2,8 @@
   "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 27,
-    "patch": 2
+    "minor": 25,
+    "patch": 1
   },
   "configurePresets": [
     {

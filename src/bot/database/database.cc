@@ -55,11 +55,6 @@ Database::Database(const std::string& database_file_path) {
   for (auto it_channel = channels_json.begin(); it_channel != channels_json.end(); ++it_channel) {
     channels_ids_[::ServerChannelStringToEnum(it_channel.key())] = it_channel.value().get<dpp::snowflake>();
   }
-
-  const auto& google_service_account_data = database_json["google_service_account"];
-  google_client_email_ = google_service_account_data["client_email"].get<std::string>();
-  google_private_key_id_ = google_service_account_data["private_key_id"].get<std::string>();
-  google_private_key_ = google_service_account_data["private_key"].get<std::string>();
 }
 
 std::string Database::GetBotToken() const noexcept {
@@ -76,16 +71,4 @@ dpp::snowflake Database::GetRoleId(const Roles role) const noexcept {
 
 dpp::snowflake Database::GetChannelId(const Channels channel) const noexcept  {
   return channels_ids_.at(channel);
-}
-
-std::string Database::GetGoogleClientEmail() const noexcept {
-  return google_client_email_;
-}
-
-std::string Database::GetGooglePrivateKeyId() const noexcept {
-  return google_private_key_id_;
-}
-
-std::string Database::GetGooglePrivateKey() const noexcept {
-  return google_private_key_;
 }

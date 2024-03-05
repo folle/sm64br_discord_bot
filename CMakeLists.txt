@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.27.2)
+cmake_minimum_required(VERSION 3.25.1)
 
 
 find_package(Git QUIET)
@@ -29,8 +29,6 @@ add_executable(${PROJECT_NAME}
                src/bot/database/database.h
                src/bot/message/message_handler.cc
                src/bot/message/message_handler.h
-               src/google_sheets/google_sheets.cc
-               src/google_sheets/google_sheets.h
                src/logger/logger.cc
                src/logger/logger.h)
 
@@ -40,11 +38,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
                            src/bot)
 
 
-find_path(JWT_CPP_INCLUDE_DIRS "jwt-cpp/base.h")                                    # Interfacing with Google Sheets
-target_include_directories(${PROJECT_NAME} PRIVATE ${JWT_CPP_INCLUDE_DIRS})
-
-find_package(Boost REQUIRED)                                                        # String handling
-find_package(cpprestsdk CONFIG REQUIRED)                                            # Interfacing with Google Sheets
 find_package(dpp CONFIG REQUIRED)                                                   # Interfacing with Discord
 find_package(fmt CONFIG REQUIRED)                                                   # Format logging
 find_package(nlohmann_json CONFIG REQUIRED)                                         # Database storage
@@ -58,8 +51,6 @@ find_package(unofficial-sodium CONFIG REQUIRED)                                 
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-                      Boost::boost
-                      cpprestsdk::cpprest
                       dpp::dpp
                       fmt::fmt-header-only
                       nlohmann_json::nlohmann_json
