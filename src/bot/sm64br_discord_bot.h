@@ -11,21 +11,21 @@ public:
   void Start() const noexcept;
 
 private:
-  void OnLog(const dpp::log_t& event) const noexcept;
-  void OnMessageCreate(const dpp::message_create_t& message_create) noexcept;
-  void OnPresenceUpdate(const dpp::presence_update_t& presence_update) noexcept;
-  void OnReady(const dpp::ready_t& ready) const noexcept;
-  void OnGuildMemberAdd(const dpp::guild_member_add_t& guild_member_add) const noexcept;
-  void OnGuildMemberRemove(const dpp::guild_member_remove_t& guild_member_remove) const noexcept;
+  void OnLog(dpp::log_t const& event) const noexcept;
+  void OnMessageCreate(dpp::message_create_t const& message_create) noexcept;
+  void OnPresenceUpdate(dpp::presence_update_t const& presence_update) noexcept;
+  void OnReady(dpp::ready_t const& ready) const noexcept;
+  void OnGuildMemberAdd(dpp::guild_member_add_t const& guild_member_add) const noexcept;
+  void OnGuildMemberRemove(dpp::guild_member_remove_t const& guild_member_remove) const noexcept;
 
   void ClearStreamingStatus() const noexcept;
 
 private:
-  const std::shared_ptr<spdlog::async_logger> logger_ = Logger::Get().Create("SM64BR Discord Bot");
+  std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("SM64BR Discord Bot");
 
-  const std::shared_ptr<Database> database_ = std::make_shared<Database>("database/database.json");
+  std::shared_ptr<Database> const database_ = std::make_shared<Database>("database/database.json");
 
-  const std:: shared_ptr<dpp::cluster> bot_ = std::make_shared<dpp::cluster>(database_->GetBotToken(), dpp::i_all_intents);
+  std:: shared_ptr<dpp::cluster> const bot_ = std::make_shared<dpp::cluster>(database_->GetBotToken(), dpp::i_all_intents);
   
   MessageHandler message_handler_ = MessageHandler(database_, bot_);
 

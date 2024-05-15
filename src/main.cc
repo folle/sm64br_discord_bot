@@ -9,7 +9,7 @@ int main(int argc, char** argv) {
     Sm64brDiscordBot bot;
     bot.Start();
   }
-  catch (const std::exception& exception) {
+  catch (std::exception const& exception) {
     std::cerr << exception.what();
     return -1;
   }

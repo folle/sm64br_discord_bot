@@ -44,6 +44,7 @@ find_package(nlohmann_json CONFIG REQUIRED)                                     
 find_package(Opus CONFIG REQUIRED)                                                  # DPP dependency
 find_package(OpenSSL REQUIRED)                                                      # DPP dependency
 find_package(spdlog CONFIG REQUIRED)                                                # Logging
+find_package(websocketpp CONFIG REQUIRED)                                           # therun.gg integration
 find_package(ZLIB REQUIRED)                                                         # DPP dependency
 
 if(UNIX)
@@ -57,6 +58,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
                       OpenSSL::SSL
                       Opus::opus
                       spdlog::spdlog_header_only
+                      websocketpp::websocketpp
                       ZLIB::ZLIB)
 
 if(UNIX)

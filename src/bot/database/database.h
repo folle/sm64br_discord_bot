@@ -25,16 +25,16 @@ public:
   Database() = delete;
   ~Database() = default;
 
-  Database(const std::string& database_file_path);
+  Database(std::string const&  database_file_path);
 
   std::string GetBotToken() const noexcept;
 
   dpp::snowflake GetGuildId() const noexcept;
-  dpp::snowflake GetRoleId(const Roles role) const noexcept;
-  dpp::snowflake GetChannelId(const Channels channel) const noexcept;
+  dpp::snowflake GetRoleId(Roles const role) const noexcept;
+  dpp::snowflake GetChannelId(Channels const channel) const noexcept;
 
 private:
-  const std::shared_ptr<spdlog::async_logger> logger_ = Logger::Get().Create("Database");
+  std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("Database");
 
   std::string bot_token_;
 

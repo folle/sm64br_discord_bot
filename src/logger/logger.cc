@@ -13,11 +13,11 @@ Logger::Logger()
 }
 
 Logger::~Logger() {
-  for (const auto& sink : sinks_) {
+  for (auto const& sink : sinks_) {
     sink->flush();
   }
 }
 
-std::shared_ptr<spdlog::async_logger> Logger::Create(const std::string& name) const noexcept {
+std::shared_ptr<spdlog::async_logger> Logger::Create(std::string const& name) const noexcept {
   return std::make_shared<spdlog::async_logger>(name, sinks_.begin(), sinks_.end(), spdlog::thread_pool());
 }

@@ -17,6 +17,7 @@
       "platform": "linux"
     },
     "spdlog",
+    "websocketpp",
     {
       "name": "zlib",
       "platform": "linux"

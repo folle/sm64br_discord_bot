@@ -9,7 +9,7 @@ class Logger final {
 public:
   static Logger& Get() noexcept;
 
-  std::shared_ptr<spdlog::async_logger> Create(const std::string& name) const noexcept;
+  std::shared_ptr<spdlog::async_logger> Create(std::string const& name) const noexcept;
 
 private:
   Logger();
@@ -19,7 +19,7 @@ private:
   void operator=(Logger const&) = delete;
 
 private:
-  const std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> stdout_sink_ = std::make_shared<spdlog::sinks::stdout_color_sink_mt >();
-  const std::shared_ptr<spdlog::sinks::daily_file_sink_mt> file_sink_ = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logs/log.txt", 0, 0);
-  const std::vector<spdlog::sink_ptr> sinks_;
+  std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> const stdout_sink_ = std::make_shared<spdlog::sinks::stdout_color_sink_mt >();
+  std::shared_ptr<spdlog::sinks::daily_file_sink_mt> const file_sink_ = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logs/log.txt", 0, 0);
+  std::vector<spdlog::sink_ptr> const sinks_;
 };

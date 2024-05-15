@@ -6,7 +6,7 @@
 
 
 namespace {
-  Database::Channels ServerChannelStringToEnum(const std::string& channel) {
+  Database::Channels ServerChannelStringToEnum(std::string const& channel) {
     if (channel == "updates") {
       return Database::Channels::kUpdates;
     }
@@ -22,7 +22,7 @@ namespace {
     return Database::Channels::kNone;
   }
 
-  Database::Roles ServerRoleStringToEnum(const std::string& role) {
+  Database::Roles ServerRoleStringToEnum(std::string const& role) {
     if (role == "moderator") {
       return Database::Roles::kModerator;
     }
@@ -36,22 +36,22 @@ namespace {
 }
 
 
-Database::Database(const std::string& database_file_path) {
+Database::Database(std::string const& database_file_path) {
   std::ifstream database_file(database_file_path);
-  const auto database_json = nlohmann::json::parse(database_file);
+  auto const database_json = nlohmann::json::parse(database_file);
 
-  const auto& bot_data = database_json["bot"];
+  auto const& bot_data = database_json["bot"];
   bot_token_ = bot_data["token"].get<std::string>();
 
-  const auto& server_data = database_json["server"];
+  auto const& server_data = database_json["server"];
   guild_id_ = server_data["guild"].get<dpp::snowflake>();
 
-  const auto& roles_json = server_data["roles"];
+  auto const& roles_json = server_data["roles"];
   for (auto it_role = roles_json.begin(); it_role != roles_json.end(); ++it_role) {
     roles_ids_[::ServerRoleStringToEnum(it_role.key())] = it_role.value().get<dpp::snowflake>();
   }
 
-  const auto& channels_json = server_data["channels"];
+  auto const& channels_json = server_data["channels"];
   for (auto it_channel = channels_json.begin(); it_channel != channels_json.end(); ++it_channel) {
     channels_ids_[::ServerChannelStringToEnum(it_channel.key())] = it_channel.value().get<dpp::snowflake>();
   }
@@ -65,10 +65,10 @@ dpp::snowflake Database::GetGuildId() const noexcept {
   return guild_id_;
 }
 
-dpp::snowflake Database::GetRoleId(const Roles role) const noexcept {
+dpp::snowflake Database::GetRoleId(Roles const role) const noexcept {
   return roles_ids_.at(role);
 }
 
-dpp::snowflake Database::GetChannelId(const Channels channel) const noexcept  {
+dpp::snowflake Database::GetChannelId(Channels const channel) const noexcept  {
   return channels_ids_.at(channel);
 }
