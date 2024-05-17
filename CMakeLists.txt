@@ -25,8 +25,8 @@ add_executable(${PROJECT_NAME}
                src/main.cc
                src/bot/sm64br_discord_bot.cc
                src/bot/sm64br_discord_bot.h
-               src/bot/database/database.cc
-               src/bot/database/database.h
+               src/bot/settings/settings.cc
+               src/bot/settings/settings.h
                src/bot/message/message_handler.cc
                src/bot/message/message_handler.h
                src/bot/the_run/the_run.cc
@@ -42,7 +42,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 find_package(dpp CONFIG REQUIRED)                                                   # Interfacing with Discord
 find_package(fmt CONFIG REQUIRED)                                                   # Format logging
-find_package(nlohmann_json CONFIG REQUIRED)                                         # Database storage
+find_package(nlohmann_json CONFIG REQUIRED)                                         # Settings storage, therun.gg parsing
 find_package(Opus CONFIG REQUIRED)                                                  # DPP dependency
 find_package(OpenSSL REQUIRED)                                                      # DPP dependency
 find_package(spdlog CONFIG REQUIRED)                                                # Logging
@@ -73,6 +73,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
                       CXX_STANDARD_REQUIRED ON)
 
 
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/database/database.json")
-  configure_file(sample/database.json "${CMAKE_BINARY_DIR}/database/database.json" COPYONLY)
+if(NOT EXISTS "${CMAKE_BINARY_DIR}/settings/settings.json")
+  configure_file(sample/settings.json "${CMAKE_BINARY_DIR}/settings/settings.json" COPYONLY)
 endif()

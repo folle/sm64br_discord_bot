@@ -62,7 +62,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
   presence_update_futures_.push_back(std::async(std::launch::async, [this, presence_update]() {
     dpp::user* streaming_user = {};
     try {
-      streaming_user = bot_->guild_get_member_sync(database_->GetGuildId(), presence_update.rich_presence.user_id).get_user();
+      streaming_user = bot_->guild_get_member_sync(settings_->GetGuildId(), presence_update.rich_presence.user_id).get_user();
     } catch (dpp::rest_exception const& rest_exception) {
       logger_->error("Failed to get member while processing presence update. Exception '{}'", rest_exception.what());
       return;
@@ -90,7 +90,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
       if (!streaming_message_sent_) {
         logger_->info("User '{}' started streaming Super Mario 64", streaming_username);
 
-        auto const streaming_message = dpp::message(database_->GetChannelId(Database::Channels::kStreams),
+        auto const streaming_message = dpp::message(settings_->GetChannelId(Settings::Channels::kStreams),
                                                     fmt::format("**{}: {}**\n{}", 
                                                                 streaming_username,
                                                                 streaming_activity->details,
@@ -104,7 +104,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
           return;
         }
 
-        bot_->guild_member_add_role(database_->GetGuildId(), streaming_user_id, database_->GetRoleId(Database::Roles::kStreaming));
+        bot_->guild_member_add_role(settings_->GetGuildId(), streaming_user_id, settings_->GetRoleId(Settings::Roles::kStreaming));
 
         streaming_users_ids_and_messages_ids_[streaming_user_id] = streaming_message_id;
       }
@@ -112,8 +112,8 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
       if (streaming_message_sent_) {
         logger_->info("User '{}' finished streaming Super Mario 64", streaming_username);
 
-        bot_->message_delete(it_user_id_and_message_id->second, database_->GetChannelId(Database::Channels::kStreams));
-        bot_->guild_member_remove_role(database_->GetGuildId(), streaming_user_id, database_->GetRoleId(Database::Roles::kStreaming));
+        bot_->message_delete(it_user_id_and_message_id->second, settings_->GetChannelId(Settings::Channels::kStreams));
+        bot_->guild_member_remove_role(settings_->GetGuildId(), streaming_user_id, settings_->GetRoleId(Settings::Roles::kStreaming));
 
         streaming_users_ids_and_messages_ids_.erase(it_user_id_and_message_id);
       }
@@ -122,13 +122,13 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
 }
 
 void Sm64brDiscordBot::OnGuildMemberAdd(dpp::guild_member_add_t const& guild_member_add) const noexcept {
-  auto const join_message = dpp::message(database_->GetChannelId(Database::Channels::kUpdates),
+  auto const join_message = dpp::message(settings_->GetChannelId(Settings::Channels::kUpdates),
                                          fmt::format("**@{}** acabou de entrar no servidor.", guild_member_add.added.get_user()->format_username()));
   bot_->message_create(join_message);
 }
 
 void Sm64brDiscordBot::OnGuildMemberRemove(dpp::guild_member_remove_t const& guild_member_remove) const noexcept {
-  auto const leave_message = dpp::message(database_->GetChannelId(Database::Channels::kUpdates),
+  auto const leave_message = dpp::message(settings_->GetChannelId(Settings::Channels::kUpdates),
                                           fmt::format("**@{}** acabou de sair no servidor.", guild_member_remove.removed.format_username()));
   bot_->message_create(leave_message);
 }
@@ -144,7 +144,7 @@ void Sm64brDiscordBot::ClearStreamingStatus() const noexcept {
   do {
     try {
       constexpr uint16_t kMaxMembersPerCall = 1000;
-      members = bot_->guild_get_members_sync(database_->GetGuildId(), kMaxMembersPerCall, highest_member_id);
+      members = bot_->guild_get_members_sync(settings_->GetGuildId(), kMaxMembersPerCall, highest_member_id);
     } catch (dpp::rest_exception const& rest_exception) {
       logger_->error("Failed to get members while clearing streaming status. Exception '{}'", rest_exception.what());
       return;
@@ -156,9 +156,9 @@ void Sm64brDiscordBot::ClearStreamingStatus() const noexcept {
       }
 
       auto const& roles = member.second.get_roles();
-      auto const it_streaming_role =  std::find(roles.cbegin(), roles.cend(), database_->GetRoleId(Database::Roles::kStreaming));
+      auto const it_streaming_role =  std::find(roles.cbegin(), roles.cend(), settings_->GetRoleId(Settings::Roles::kStreaming));
       if (it_streaming_role != roles.cend()) {
-        bot_->guild_member_remove_role(database_->GetGuildId(), member.second.user_id, database_->GetRoleId(Database::Roles::kStreaming));
+        bot_->guild_member_remove_role(settings_->GetGuildId(), member.second.user_id, settings_->GetRoleId(Settings::Roles::kStreaming));
       }
     }
   } while (!members.empty());
@@ -169,7 +169,7 @@ void Sm64brDiscordBot::ClearStreamingStatus() const noexcept {
   do {
     try {
       constexpr uint64_t kMaxMessagesPerCall = 100;
-      streaming_messages = bot_->messages_get_sync(database_->GetChannelId(Database::Channels::kStreams), {}, {}, {}, kMaxMessagesPerCall);
+      streaming_messages = bot_->messages_get_sync(settings_->GetChannelId(Settings::Channels::kStreams), {}, {}, {}, kMaxMessagesPerCall);
     } catch (dpp::rest_exception const& rest_exception) {
       logger_->error("Failed to get streaming messages while clearing streaming status. Exception '{}'", rest_exception.what());
       return;
@@ -180,7 +180,7 @@ void Sm64brDiscordBot::ClearStreamingStatus() const noexcept {
         earliest_streaming_message_id = streaming_message.first;
       }
 
-      bot_->message_delete(streaming_message.first, database_->GetChannelId(Database::Channels::kStreams));
+      bot_->message_delete(streaming_message.first, settings_->GetChannelId(Settings::Channels::kStreams));
     }
   } while (!streaming_messages.empty());
 }

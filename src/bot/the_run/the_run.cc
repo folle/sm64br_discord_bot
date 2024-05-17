@@ -1,8 +1,8 @@
 #include "the_run.h"
 
 
-TheRun::TheRun(std::shared_ptr<Database> database, std::shared_ptr<dpp::cluster> bot) noexcept :
-  database_(std::move(database)), bot_(std::move(bot)) {
+TheRun::TheRun(std::shared_ptr<Settings> settings, std::shared_ptr<dpp::cluster> bot) noexcept :
+  settings_s(std::move(settings)), bot_(std::move(bot)) {
   client_.clear_access_channels(websocketpp::log::alevel::all);
   client_.clear_error_channels(websocketpp::log::elevel::all);
 

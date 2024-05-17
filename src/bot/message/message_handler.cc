@@ -11,8 +11,8 @@ namespace{
 }
 
 
-MessageHandler::MessageHandler(std::shared_ptr<Database> database, std::shared_ptr<dpp::cluster> bot) noexcept :
-  database_(std::move(database)), bot_(std::move(bot)) {
+MessageHandler::MessageHandler(std::shared_ptr<Settings> settings, std::shared_ptr<dpp::cluster> bot) noexcept :
+  settings_(std::move(settings)), bot_(std::move(bot)) {
 }
 
 void MessageHandler::Process(dpp::message const& message) noexcept {
@@ -27,7 +27,7 @@ void MessageHandler::Process(dpp::message const& message) noexcept {
 
   auto const from_moderator = std::any_of(member.get_roles().begin(),
                                           member.get_roles().end(),
-                                          [this](auto const& role) { return (role == database_->GetRoleId(Database::Roles::kModerator)); });
+                                          [this](auto const& role) { return (role == settings_->GetRoleId(Settings::Roles::kModerator)); });
   auto const from_bot = message.author.is_bot();
 
   auto const is_announcement_message = !message.content.rfind("!a ", 0);
@@ -42,7 +42,7 @@ void MessageHandler::Process(dpp::message const& message) noexcept {
     return;
   }
 
-  auto const is_streaming_message = (message.channel_id == database_->GetChannelId(Database::Channels::kStreams));
+  auto const is_streaming_message = (message.channel_id == settings_->GetChannelId(Settings::Channels::kStreams));
   if (is_streaming_message && !from_bot) {
     ProcessStreamingMessage(message.author.id, message.id, message.content);
     return;
@@ -82,7 +82,7 @@ void MessageHandler::ProcessStreamingMessage(dpp::snowflake const user_id, dpp::
     bot_->direct_message_create(user_id, dpp::message(invalid_streaming_message));
   }
 
-  bot_->message_delete(message_id, database_->GetChannelId(Database::Channels::kStreams));
+  bot_->message_delete(message_id, settings_->GetChannelId(Settings::Channels::kStreams));
 
   logger_->info("Deleted streaming message with id '{}'", message_id);
 }

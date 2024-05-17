@@ -7,7 +7,7 @@
 #include "logger/logger.h"
 
 
-class Database final {
+class Settings final {
 public:
   enum class Channels {
     kNone,
@@ -22,10 +22,10 @@ public:
     kStreaming
   };
 
-  Database() = delete;
-  ~Database() = default;
+  Settings() = delete;
+  ~Settings() = default;
 
-  Database(std::string const&  database_file_path);
+  Settings(std::string const& settings_file_path);
 
   std::string const& GetBotToken() const noexcept;
 
@@ -36,7 +36,7 @@ public:
   std::string const& GetTheRunEndpoint() const noexcept;
 
 private:
-  std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("Database");
+  std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("Settings");
 
   std::string bot_token_;
 

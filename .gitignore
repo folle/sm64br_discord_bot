@@ -11,5 +11,6 @@ CTestTestfile.cmake
 _deps
 .vs
 .vscode
+.DS_Store
 out
 build

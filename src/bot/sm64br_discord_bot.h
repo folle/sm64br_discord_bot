@@ -24,13 +24,13 @@ private:
 private:
   std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("SM64BR Discord Bot");
 
-  std::shared_ptr<Database> const database_ = std::make_shared<Database>("database/database.json");
+  std::shared_ptr<Settings> const settings_ = std::make_shared<Settings>("settings/settings.json");
 
-  std:: shared_ptr<dpp::cluster> const bot_ = std::make_shared<dpp::cluster>(database_->GetBotToken(), dpp::i_all_intents);
+  std:: shared_ptr<dpp::cluster> const bot_ = std::make_shared<dpp::cluster>(settings_->GetBotToken(), dpp::i_all_intents);
   
-  MessageHandler message_handler_ = MessageHandler(database_, bot_);
+  MessageHandler message_handler_ = MessageHandler(settings_, bot_);
 
-  TheRun the_run = TheRun(database_, bot_);
+  TheRun the_run = TheRun(settings_, bot_);
 
   std::map<dpp::snowflake, dpp::snowflake> streaming_users_ids_and_messages_ids_;
   std::mutex on_presence_update_mutex_;
