@@ -13,5 +13,8 @@
       "moderator": 1018992321632686170,
       "streaming": 1176297176645763162
     }
+  },
+  "the_run": {
+    "endpoint": "wss://fh76djw1t9.execute-api.eu-west-1.amazonaws.com/prod"
   }
 }

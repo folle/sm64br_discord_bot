@@ -1,6 +1,7 @@
 #pragma once
 
 #include "message/message_handler.h"
+#include "the_run/the_run.h"
 
 
 class Sm64brDiscordBot final {
@@ -28,6 +29,8 @@ private:
   std:: shared_ptr<dpp::cluster> const bot_ = std::make_shared<dpp::cluster>(database_->GetBotToken(), dpp::i_all_intents);
   
   MessageHandler message_handler_ = MessageHandler(database_, bot_);
+
+  TheRun the_run = TheRun(database_, bot_);
 
   std::map<dpp::snowflake, dpp::snowflake> streaming_users_ids_and_messages_ids_;
   std::mutex on_presence_update_mutex_;

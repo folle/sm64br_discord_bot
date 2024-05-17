@@ -27,11 +27,13 @@ public:
 
   Database(std::string const&  database_file_path);
 
-  std::string GetBotToken() const noexcept;
+  std::string const& GetBotToken() const noexcept;
 
   dpp::snowflake GetGuildId() const noexcept;
   dpp::snowflake GetRoleId(Roles const role) const noexcept;
   dpp::snowflake GetChannelId(Channels const channel) const noexcept;
+
+  std::string const& GetTheRunEndpoint() const noexcept;
 
 private:
   std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("Database");
@@ -41,4 +43,6 @@ private:
   dpp::snowflake guild_id_;
   std::map<Roles, dpp::snowflake> roles_ids_;
   std::map<Channels, dpp::snowflake> channels_ids_;
+
+  std::string the_run_endpoint_;
 };

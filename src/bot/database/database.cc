@@ -55,9 +55,12 @@ Database::Database(std::string const& database_file_path) {
   for (auto it_channel = channels_json.begin(); it_channel != channels_json.end(); ++it_channel) {
     channels_ids_[::ServerChannelStringToEnum(it_channel.key())] = it_channel.value().get<dpp::snowflake>();
   }
+
+  auto const& the_run_data = database_json["the_run"];
+  the_run_endpoint_ = the_run_data["end_point"].get<std::string>();
 }
 
-std::string Database::GetBotToken() const noexcept {
+std::string const& Database::GetBotToken() const noexcept {
   return bot_token_;
 }
 
@@ -71,4 +74,8 @@ dpp::snowflake Database::GetRoleId(Roles const role) const noexcept {
 
 dpp::snowflake Database::GetChannelId(Channels const channel) const noexcept  {
   return channels_ids_.at(channel);
+}
+
+std::string const& Database::GetTheRunEndpoint() const noexcept {
+  return the_run_endpoint_;
 }

@@ -29,6 +29,8 @@ add_executable(${PROJECT_NAME}
                src/bot/database/database.h
                src/bot/message/message_handler.cc
                src/bot/message/message_handler.h
+               src/bot/the_run/the_run.cc
+               src/bot/the_run/the_run.h
                src/logger/logger.cc
                src/logger/logger.h)
 
