@@ -10,152 +10,78 @@ TheRun::TheRun(std::shared_ptr<Settings> settings, std::shared_ptr<dpp::cluster>
   client_.start_perpetual();
 
   thread_ = websocketpp::lib::make_shared<websocketpp::lib::thread>(&websocketpp::client<websocketpp::config::asio_client>::run, &client_);
+
+  Connect();
 }
 
 TheRun::~TheRun() {
-  
+  client_.stop_perpetual();
+
+  thread_->join();
 }
 
-void TheRun::OnOpen(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const handler) {
+void TheRun::Connect() noexcept {
+  websocketpp::lib::error_code error_code;
+  auto const connection = client_.get_connection(settings_->GetTheRunEndpoint(), error_code);
+  if (error_code) {
+    logger_->error("Failed to connect to The Run endpoint '{}'. Error '{}'", settings_->GetTheRunEndpoint(), error_code.message());
+    return;
+  }
 
+  connection_handle_ = connection->get_handle();
+
+  connection->set_open_handler(websocketpp::lib::bind(
+    &TheRun::OnOpen,
+    this,
+    &client_,
+    websocketpp::lib::placeholders::_1
+  ));
+  connection->set_close_handler(websocketpp::lib::bind(
+    &TheRun::OnClose,
+    this,
+    &client_,
+    websocketpp::lib::placeholders::_1
+  ));
+  connection->set_fail_handler(websocketpp::lib::bind(
+    &TheRun::OnFail,
+    this,
+    &client_,
+    websocketpp::lib::placeholders::_1
+  ));
+  connection->set_message_handler(websocketpp::lib::bind(
+    &TheRun::OnMessage,
+    this,
+    websocketpp::lib::placeholders::_1,
+    websocketpp::lib::placeholders::_2
+  ));
+
+  client_.connect(connection);
 }
 
-void TheRun::OnClose(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const handler) {
-
+void TheRun::Disconnect() noexcept {
+  websocketpp::lib::error_code error_code;
+  client_.close(connection_handle_, websocketpp::close::status::going_away, "", error_code);
+  if (error_code) {
+    logger_->error("Failed to disconnect to The Run endpoint '{}'. Error '{}'", settings_->GetTheRunEndpoint(), error_code.message());
+  }
 }
 
-void TheRun::OnFail(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const handler) {
-
+void TheRun::OnOpen(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept {
+  logger_->info("Connection to The Run endpoint opened");
 }
 
-void TheRun::OnMessage(websocketpp::connection_hdl const handler, websocketpp::client<websocketpp::config::asio_client>::message_ptr const message) {
-
+void TheRun::OnClose(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept {
+  logger_->info("Connection to The Run endpoint closed");
 }
 
+void TheRun::OnFail(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept {
+  auto const connection = client->get_con_from_hdl(connection_handle);
+  logger_->error("Connection to The Run endpoint failed. Error '{}'", connection->get_ec().message());
+}
 
-// class connection_metadata {
-// public:
-//     void on_open(client * c, websocketpp::connection_hdl hdl) {
-//         m_status = "Open";
-
-//         client::connection_ptr con = c->get_con_from_hdl(hdl);
-//         m_server = con->get_response_header("Server");
-//     }
-
-//     void on_fail(client * c, websocketpp::connection_hdl hdl) {
-//         m_status = "Failed";
-
-//         client::connection_ptr con = c->get_con_from_hdl(hdl);
-//         m_server = con->get_response_header("Server");
-//         m_error_reason = con->get_ec().message();
-//     }
-    
-//     void on_close(client * c, websocketpp::connection_hdl hdl) {
-//         m_status = "Closed";
-//         client::connection_ptr con = c->get_con_from_hdl(hdl);
-//         std::stringstream s;
-//         s << "close code: " << con->get_remote_close_code() << " (" 
-//           << websocketpp::close::status::get_string(con->get_remote_close_code()) 
-//           << "), close reason: " << con->get_remote_close_reason();
-//         m_error_reason = s.str();
-//     }
-
-//     void on_message(websocketpp::connection_hdl, client::message_ptr msg) {
-//         if (msg->get_opcode() == websocketpp::frame::opcode::text) {
-//             m_messages.push_back("<< " + msg->get_payload());
-//         } else {
-//             m_messages.push_back("<< " + websocketpp::utility::to_hex(msg->get_payload()));
-//         }
-//     }
-// };
-
-// class websocket_endpoint {
-//     ~websocket_endpoint() {
-//         m_endpoint.stop_perpetual();
-        
-//         for (con_list::const_iterator it = m_connection_list.begin(); it != m_connection_list.end(); ++it) {
-//             if (it->second->get_status() != "Open") {
-//                 // Only close open connections
-//                 continue;
-//             }
-            
-//             std::cout << "> Closing connection " << it->second->get_id() << std::endl;
-            
-//             websocketpp::lib::error_code ec;
-//             m_endpoint.close(it->second->get_hdl(), websocketpp::close::status::going_away, "", ec);
-//             if (ec) {
-//                 std::cout << "> Error closing connection " << it->second->get_id() << ": "  
-//                           << ec.message() << std::endl;
-//             }
-//         }
-        
-//         m_thread->join();
-//     }
-
-//     int connect(std::string const & uri) {
-//         websocketpp::lib::error_code ec;
-
-//         client::connection_ptr con = m_endpoint.get_connection(uri, ec);
-
-//         if (ec) {
-//             std::cout << "> Connect initialization error: " << ec.message() << std::endl;
-//             return -1;
-//         }
-
-//         int new_id = m_next_id++;
-//         connection_metadata::ptr metadata_ptr = websocketpp::lib::make_shared<connection_metadata>(new_id, con->get_handle(), uri);
-//         m_connection_list[new_id] = metadata_ptr;
-
-//         con->set_open_handler(websocketpp::lib::bind(
-//             &connection_metadata::on_open,
-//             metadata_ptr,
-//             &m_endpoint,
-//             websocketpp::lib::placeholders::_1
-//         ));
-//         con->set_fail_handler(websocketpp::lib::bind(
-//             &connection_metadata::on_fail,
-//             metadata_ptr,
-//             &m_endpoint,
-//             websocketpp::lib::placeholders::_1
-//         ));
-//         con->set_close_handler(websocketpp::lib::bind(
-//             &connection_metadata::on_close,
-//             metadata_ptr,
-//             &m_endpoint,
-//             websocketpp::lib::placeholders::_1
-//         ));
-//         con->set_message_handler(websocketpp::lib::bind(
-//             &connection_metadata::on_message,
-//             metadata_ptr,
-//             websocketpp::lib::placeholders::_1,
-//             websocketpp::lib::placeholders::_2
-//         ));
-
-//         m_endpoint.connect(con);
-
-//         return new_id;
-//     }
-
-//     void close(int id, websocketpp::close::status::value code, std::string reason) {
-//         websocketpp::lib::error_code ec;
-        
-//         con_list::iterator metadata_it = m_connection_list.find(id);
-//         if (metadata_it == m_connection_list.end()) {
-//             std::cout << "> No connection found with id " << id << std::endl;
-//             return;
-//         }
-        
-//         m_endpoint.close(metadata_it->second->get_hdl(), code, reason, ec);
-//         if (ec) {
-//             std::cout << "> Error initiating close: " << ec.message() << std::endl;
-//         }
-//     }
-// private:
-//     typedef std::map<int,connection_metadata::ptr> con_list;
-
-//     client m_endpoint;
-//     websocketpp::lib::shared_ptr<websocketpp::lib::thread> m_thread;
-
-//     con_list m_connection_list;
-//     int m_next_id;
-// };
+void TheRun::OnMessage(websocketpp::connection_hdl const handler, websocketpp::client<websocketpp::config::asio_client>::message_ptr const message) noexcept {
+  if (message->get_opcode() != websocketpp::frame::opcode::text) {
+    return;
+  }
+  //msg->get_payload();
+}

@@ -40,6 +40,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
                            src/bot)
 
 
+find_package(Boost REQUIRED random)                                                 # websocketpp dependency
 find_package(dpp CONFIG REQUIRED)                                                   # Interfacing with Discord
 find_package(fmt CONFIG REQUIRED)                                                   # Format logging
 find_package(nlohmann_json CONFIG REQUIRED)                                         # Settings storage, therun.gg parsing
@@ -54,6 +55,7 @@ find_package(unofficial-sodium CONFIG REQUIRED)                                 
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+                      Boost::boost Boost::random
                       dpp::dpp
                       fmt::fmt-header-only
                       nlohmann_json::nlohmann_json

@@ -16,10 +16,13 @@ public:
   TheRun(std::shared_ptr<Settings> settings, std::shared_ptr<dpp::cluster> bot) noexcept;
 
 private:
-  void OnOpen(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const handler);
-  void OnClose(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const handler);
-  void OnFail(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const handler);
-  void OnMessage(websocketpp::connection_hdl const handler, websocketpp::client<websocketpp::config::asio_client>::message_ptr const message);
+  void Connect() noexcept;
+  void Disconnect() noexcept;
+
+  void OnOpen(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept;
+  void OnClose(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept;
+  void OnFail(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept;
+  void OnMessage(websocketpp::connection_hdl const handler, websocketpp::client<websocketpp::config::asio_client>::message_ptr const message) noexcept;
 
 private:
   std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("The Run");
@@ -29,5 +32,5 @@ private:
 
   websocketpp::client<websocketpp::config::asio_client> client_;
   websocketpp::lib::shared_ptr<websocketpp::lib::thread> thread_;
-  websocketpp::connection_hdl connection_handler_;
+  websocketpp::connection_hdl connection_handle_;
 };

@@ -57,7 +57,7 @@ Settings::Settings(std::string const& settings_file_path) {
   }
 
   auto const& the_run_data = settings_json["the_run"];
-  the_run_endpoint_ = the_run_data["end_point"].get<std::string>();
+  the_run_endpoint_ = the_run_data["endpoint"].get<std::string>();
 }
 
 std::string const& Settings::GetBotToken() const noexcept {
