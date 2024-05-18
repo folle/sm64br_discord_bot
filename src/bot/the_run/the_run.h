@@ -1,7 +1,7 @@
 #pragma once
 
 #include <dpp/dpp.h>
-#include <websocketpp/config/asio_no_tls_client.hpp>
+#include <websocketpp/config/asio_client.hpp>
 #include <websocketpp/client.hpp>
 
 #include "settings/settings.h"
@@ -19,10 +19,12 @@ private:
   void Connect() noexcept;
   void Disconnect() noexcept;
 
-  void OnOpen(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept;
-  void OnClose(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept;
-  void OnFail(websocketpp::client<websocketpp::config::asio_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept;
-  void OnMessage(websocketpp::connection_hdl const handler, websocketpp::client<websocketpp::config::asio_client>::message_ptr const message) noexcept;
+  std::shared_ptr<boost::asio::ssl::context> OnTlsInit() noexcept;
+
+  void OnOpen(websocketpp::client<websocketpp::config::asio_tls_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept;
+  void OnClose(websocketpp::client<websocketpp::config::asio_tls_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept;
+  void OnFail(websocketpp::client<websocketpp::config::asio_tls_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept;
+  void OnMessage(websocketpp::connection_hdl const handler, websocketpp::client<websocketpp::config::asio_tls_client>::message_ptr const message) noexcept;
 
 private:
   std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("The Run");
@@ -30,7 +32,7 @@ private:
   std::shared_ptr<Settings> const settings_;
   std::shared_ptr<dpp::cluster> const bot_;
 
-  websocketpp::client<websocketpp::config::asio_client> client_;
+  websocketpp::client<websocketpp::config::asio_tls_client> client_;
   websocketpp::lib::shared_ptr<websocketpp::lib::thread> thread_;
   websocketpp::connection_hdl connection_handle_;
 };
