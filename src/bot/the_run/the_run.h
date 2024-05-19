@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <set>
 #include <dpp/dpp.h>
 #include <websocketpp/config/asio_client.hpp>
 #include <websocketpp/client.hpp>
@@ -38,4 +39,6 @@ private:
   websocketpp::client<websocketpp::config::asio_tls_client> client_;
   websocketpp::lib::shared_ptr<websocketpp::lib::thread> thread_;
   websocketpp::connection_hdl connection_handle_;
+
+  std::set<std::string> announced_users_;
 };

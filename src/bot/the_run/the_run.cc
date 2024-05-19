@@ -153,6 +153,10 @@ void TheRun::ProcessRunPayload(std::string const& run_payload) noexcept {
     auto const pb = run_data["pb"].get<long long>();
     auto const bpt = run_data["bestPossible"].get<long long>();
     if (pb < bpt) {
+      if (auto const it_user = std::ranges::find(announced_users_, user); it_user != announced_users_.end()) {
+        announced_users_.erase(it_user);
+      }
+
       return;
     }
 
@@ -167,9 +171,15 @@ void TheRun::ProcessRunPayload(std::string const& run_payload) noexcept {
     return;
   }
 
+  if (std::ranges::find(announced_users_, user) != announced_users_.end()) {
+    return;
+  }
+
   auto const pacepals_message = fmt::format("@Pacepals\nRunner: {}\nCategoria: {} - {}\nPB: {:02}:{:02}:{:02}.{:03}\nBPT: {:02}:{:02}:{:02}.{:03}\n",
                                             user, game, category,
                                             pb_split_time.hours.count(), pb_split_time.minutes.count(), pb_split_time.seconds.count(), pb_split_time.milliseconds.count(),
                                             bpt_split_time.hours.count(), bpt_split_time.minutes.count(), bpt_split_time.seconds.count(), bpt_split_time.milliseconds.count());
   bot_->message_create(dpp::message(settings_->GetChannelId(Settings::Channels::kGeneral), pacepals_message));
+
+  announced_users_.insert(user);
 }
