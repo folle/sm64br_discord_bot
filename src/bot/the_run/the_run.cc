@@ -129,33 +129,47 @@ void TheRun::OnMessage(websocketpp::connection_hdl const handler, websocketpp::c
 }
 
 void TheRun::ProcessRunPayload(std::string const& run_payload) noexcept {
-  auto const payload_json = nlohmann::json::parse(run_payload);
+  std::string user;
+  std::string game;
+  std::string category;
+  SplitTime pb_split_time;
+  SplitTime bpt_split_time;
+  try {
+    auto const payload_json = nlohmann::json::parse(run_payload);
 
-  auto const user = payload_json["user"].get<std::string>();
+    user = payload_json["user"].get<std::string>();
 
-  auto const& run_data = payload_json["run"];
-  auto const game = run_data["game"].get<std::string>();
-  if (0 != game.rfind("Super Mario 64")) {
+    auto const& run_data = payload_json["run"];
+    game = run_data["game"].get<std::string>();
+    if (0 != game.rfind("Super Mario 64")) {
+      return;
+    }
+
+    auto const run_percentage = run_data["runPercentage"].get<double>();
+    if (run_percentage < 0.8) {
+      return;
+    }
+
+    auto const pb = run_data["pb"].get<double>();
+    auto const bpt = run_data["bestPossible"].get<double>();
+    if (pb < bpt) {
+      return;
+    }
+
+    auto const current_time = run_data["currentTime"].get<double>();
+    category = run_data["category"].get<std::string>();
+
+    pb_split_time = ::MillisecondsToSplitTime(pb);
+    bpt_split_time = ::MillisecondsToSplitTime(bpt);
+  }
+  catch (std::exception const& exception) {
+    logger_->error("Failed to parse The Run payload '{}'. Error '{}'", run_payload, exception.what());
     return;
   }
 
-  auto const run_percentage = run_data["runPercentage"].get<double>();
-  if (run_percentage < 0.8) {
-    return;
-  }
-
-  auto const pb = run_data["pb"].get<double>();
-  auto const bpt = run_data["bestPossible"].get<double>();
-  if (pb < bpt) {
-    return;
-  }
-
-  auto const pb_split_time = ::MillisecondsToSplitTime(pb);
-  auto const bpt_split_time = ::MillisecondsToSplitTime(bpt);
-
-  auto const current_time = run_data["currentTime"].get<double>();
-  auto const category = run_data["category"].get<std::string>();
-
-  auto const pacepals_message = fmt::format("Runner: {}\nCategoria: {} - {}\nPB: {}\nBPT: {}\n", user, game, category, pb, bpt);
+  auto const pacepals_message = fmt::format("Runner: {}\nCategoria: {} - {}\nPB: {:02}:{:02}:{:02}.{:03}\nBPT: {:02}:{:02}:{:02}.{:03}\n",
+                                            user, game, category,
+                                            pb_split_time.hours, pb_split_time.minutes, pb_split_time.seconds, pb_split_time.milliseconds,
+                                            bpt_split_time.hours, bpt_split_time.minutes, bpt_split_time.seconds, bpt_split_time.milliseconds);
   bot_->message_create(dpp::message(settings_->GetChannelId(Settings::Channels::kGeneral), pacepals_message));
 }
