@@ -12,9 +12,9 @@ namespace {
     std::chrono::hours hours;
   };
 
-  SplitTime MillisecondsToSplitTime(double const milliseconds) {
+  SplitTime MillisecondsToSplitTime(long long const milliseconds) {
     SplitTime split_time;
-    split_time.milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<double>(milliseconds));
+    split_time.milliseconds = std::chrono::milliseconds(milliseconds);
     split_time.seconds = std::chrono::duration_cast<std::chrono::seconds>(split_time.milliseconds);
     split_time.milliseconds -= std::chrono::duration_cast<std::chrono::milliseconds>(split_time.seconds);
     split_time.minutes = std::chrono::duration_cast<std::chrono::minutes>(split_time.seconds);
@@ -146,17 +146,17 @@ void TheRun::ProcessRunPayload(std::string const& run_payload) noexcept {
     }
 
     auto const run_percentage = run_data["runPercentage"].get<double>();
-    if (run_percentage < 0.8) {
+    if (run_percentage < 0.85) {
       return;
     }
 
-    auto const pb = run_data["pb"].get<double>();
-    auto const bpt = run_data["bestPossible"].get<double>();
+    auto const pb = run_data["pb"].get<long long>();
+    auto const bpt = run_data["bestPossible"].get<long long>();
     if (pb < bpt) {
       return;
     }
 
-    auto const current_time = run_data["currentTime"].get<double>();
+    //auto const current_time = run_data["currentTime"].get<double>();
     category = run_data["category"].get<std::string>();
 
     pb_split_time = ::MillisecondsToSplitTime(pb);
@@ -167,7 +167,7 @@ void TheRun::ProcessRunPayload(std::string const& run_payload) noexcept {
     return;
   }
 
-  auto const pacepals_message = fmt::format("Runner: {}\nCategoria: {} - {}\nPB: {:02}:{:02}:{:02}.{:03}\nBPT: {:02}:{:02}:{:02}.{:03}\n",
+  auto const pacepals_message = fmt::format("@Pacepals\nRunner: {}\nCategoria: {} - {}\nPB: {:02}:{:02}:{:02}.{:03}\nBPT: {:02}:{:02}:{:02}.{:03}\n",
                                             user, game, category,
                                             pb_split_time.hours.count(), pb_split_time.minutes.count(), pb_split_time.seconds.count(), pb_split_time.milliseconds.count(),
                                             bpt_split_time.hours.count(), bpt_split_time.minutes.count(), bpt_split_time.seconds.count(), bpt_split_time.milliseconds.count());
