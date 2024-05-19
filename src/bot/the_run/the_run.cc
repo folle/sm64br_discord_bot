@@ -169,7 +169,7 @@ void TheRun::ProcessRunPayload(std::string const& run_payload) noexcept {
 
   auto const pacepals_message = fmt::format("Runner: {}\nCategoria: {} - {}\nPB: {:02}:{:02}:{:02}.{:03}\nBPT: {:02}:{:02}:{:02}.{:03}\n",
                                             user, game, category,
-                                            pb_split_time.hours, pb_split_time.minutes, pb_split_time.seconds, pb_split_time.milliseconds,
-                                            bpt_split_time.hours, bpt_split_time.minutes, bpt_split_time.seconds, bpt_split_time.milliseconds);
+                                            pb_split_time.hours.count(), pb_split_time.minutes.count(), pb_split_time.seconds.count(), pb_split_time.milliseconds.count(),
+                                            bpt_split_time.hours.count(), bpt_split_time.minutes.count(), bpt_split_time.seconds.count(), bpt_split_time.milliseconds.count());
   bot_->message_create(dpp::message(settings_->GetChannelId(Settings::Channels::kGeneral), pacepals_message));
 }
