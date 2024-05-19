@@ -11,6 +11,7 @@ class Settings final {
 public:
   enum class Channels {
     kNone,
+    kGeneral,
     kUpdates,
     kStreams,
     kPbSubmission

@@ -1,5 +1,7 @@
 #include "sm64br_discord_bot.h"
 
+#include <fmt/format.h>
+
 
 Sm64brDiscordBot::Sm64brDiscordBot() {
   bot_->on_log([this](dpp::log_t const& event) { OnLog(event); });

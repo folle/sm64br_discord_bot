@@ -1,5 +1,30 @@
 #include "the_run.h"
 
+#include <fmt/format.h>
+#include <nlohmann/json.hpp>
+
+
+namespace {
+  struct SplitTime {
+    std::chrono::milliseconds milliseconds;
+    std::chrono::seconds seconds;
+    std::chrono::minutes minutes;
+    std::chrono::hours hours;
+  };
+
+  SplitTime MillisecondsToSplitTime(double const milliseconds) {
+    SplitTime split_time;
+    split_time.milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<double>(milliseconds));
+    split_time.seconds = std::chrono::duration_cast<std::chrono::seconds>(split_time.milliseconds);
+    split_time.milliseconds -= std::chrono::duration_cast<std::chrono::milliseconds>(split_time.seconds);
+    split_time.minutes = std::chrono::duration_cast<std::chrono::minutes>(split_time.seconds);
+    split_time.seconds -= std::chrono::duration_cast<std::chrono::seconds>(split_time.minutes);
+    split_time.hours = std::chrono::duration_cast<std::chrono::hours>(split_time.minutes);
+    split_time.minutes -= std::chrono::duration_cast<std::chrono::minutes>(split_time.hours);
+    return split_time;
+  }
+}
+
 
 TheRun::TheRun(std::shared_ptr<Settings> settings, std::shared_ptr<dpp::cluster> bot) noexcept :
   settings_(std::move(settings)), bot_(std::move(bot)) {
@@ -29,7 +54,7 @@ std::shared_ptr<boost::asio::ssl::context> TheRun::OnTlsInit() noexcept {
   try {
     ssl_context->set_options(boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 | boost::asio::ssl::context::no_sslv3 | boost::asio::ssl::context::single_dh_use);
   }
-  catch (std::exception &const exception) {
+  catch (std::exception const& exception) {
     logger_->error("Failed to set The Run SSL context. Error '{}'", exception.what());
   }
 
@@ -99,5 +124,38 @@ void TheRun::OnMessage(websocketpp::connection_hdl const handler, websocketpp::c
   if (message->get_opcode() != websocketpp::frame::opcode::text) {
     return;
   }
-  //msg->get_payload();
+ 
+  ProcessRunPayload(message->get_payload());
+}
+
+void TheRun::ProcessRunPayload(std::string const& run_payload) noexcept {
+  auto const payload_json = nlohmann::json::parse(run_payload);
+
+  auto const user = payload_json["user"].get<std::string>();
+
+  auto const& run_data = payload_json["run"];
+  auto const game = run_data["game"].get<std::string>();
+  if (0 != game.rfind("Super Mario 64")) {
+    return;
+  }
+
+  auto const run_percentage = run_data["runPercentage"].get<double>();
+  if (run_percentage < 0.8) {
+    return;
+  }
+
+  auto const pb = run_data["pb"].get<double>();
+  auto const bpt = run_data["bestPossible"].get<double>();
+  if (pb < bpt) {
+    return;
+  }
+
+  auto const pb_split_time = ::MillisecondsToSplitTime(pb);
+  auto const bpt_split_time = ::MillisecondsToSplitTime(bpt);
+
+  auto const current_time = run_data["currentTime"].get<double>();
+  auto const category = run_data["category"].get<std::string>();
+
+  auto const pacepals_message = fmt::format("Runner: {}\nCategoria: {} - {}\nPB: {}\nBPT: {}\n", user, game, category, pb, bpt);
+  bot_->message_create(dpp::message(settings_->GetChannelId(Settings::Channels::kGeneral), pacepals_message));
 }

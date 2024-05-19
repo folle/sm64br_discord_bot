@@ -7,6 +7,10 @@
 
 namespace {
   Settings::Channels ServerChannelStringToEnum(std::string const& channel) {
+    if (channel == "general") {
+      return Settings::Channels::kGeneral;
+    }
+
     if (channel == "updates") {
       return Settings::Channels::kUpdates;
     }

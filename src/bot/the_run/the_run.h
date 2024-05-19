@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <dpp/dpp.h>
 #include <websocketpp/config/asio_client.hpp>
 #include <websocketpp/client.hpp>
@@ -25,6 +26,8 @@ private:
   void OnClose(websocketpp::client<websocketpp::config::asio_tls_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept;
   void OnFail(websocketpp::client<websocketpp::config::asio_tls_client> *const client, websocketpp::connection_hdl const connection_handle) noexcept;
   void OnMessage(websocketpp::connection_hdl const handler, websocketpp::client<websocketpp::config::asio_tls_client>::message_ptr const message) noexcept;
+
+  void ProcessRunPayload(std::string const& run_payload) noexcept;
 
 private:
   std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("The Run");
