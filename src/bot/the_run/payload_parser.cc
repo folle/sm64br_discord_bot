@@ -99,3 +99,33 @@ std::string const& PayloadParser::GetUser() const noexcept {
 std::string PayloadParser::GetString() const noexcept {
   return {};
 }
+
+
+// {
+//     "user": "Simply",
+//     "run": {
+//         "sob": 5658528.517,
+//         "runPercentage": 0,
+//         "currentTime": 1360.1797000000001,
+//         "emulator": false,
+//         "game": "Super Mario 64",
+//         "bestPossible": 5658528.517,
+//         "currentlyStreaming": true,
+//         "pb": 5832271.292,
+//         "category": "120 Star",
+//         "user": "Simply",
+//         "gameData": {
+//              "attemptCount": 6806,
+//              "url": "Simply/Super%20Mario%2064/120%20Star",
+//         },
+//         "splits": [
+//             {
+//                 "pbSplitTime": 169160,
+//                 "bestPossible": 164300,
+//                 "name": "DW (1)",
+//                 "splitTime": null,
+//                 "index": "0"
+//             }
+//         ]
+//     },
+// }
