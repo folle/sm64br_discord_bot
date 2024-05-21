@@ -29,6 +29,8 @@ add_executable(${PROJECT_NAME}
                src/bot/settings/settings.h
                src/bot/message/message_handler.cc
                src/bot/message/message_handler.h
+               src/bot/the_run/payload_parser.cc
+               src/bot/the_run/payload_parser.h
                src/bot/the_run/the_run.cc
                src/bot/the_run/the_run.h
                src/logger/logger.cc

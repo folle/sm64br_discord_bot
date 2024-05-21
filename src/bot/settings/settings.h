@@ -20,7 +20,8 @@ public:
   enum class Roles {
     kNone,
     kModerator,
-    kStreaming
+    kStreaming,
+    kPacepals
   };
 
   Settings() = delete;

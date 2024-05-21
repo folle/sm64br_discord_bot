@@ -1,29 +1,8 @@
 #include "the_run.h"
 
 #include <fmt/format.h>
-#include <nlohmann/json.hpp>
 
-
-namespace {
-  struct SplitTime {
-    std::chrono::milliseconds milliseconds;
-    std::chrono::seconds seconds;
-    std::chrono::minutes minutes;
-    std::chrono::hours hours;
-  };
-
-  SplitTime MillisecondsToSplitTime(long long const milliseconds) {
-    SplitTime split_time;
-    split_time.milliseconds = std::chrono::milliseconds(milliseconds);
-    split_time.seconds = std::chrono::duration_cast<std::chrono::seconds>(split_time.milliseconds);
-    split_time.milliseconds -= std::chrono::duration_cast<std::chrono::milliseconds>(split_time.seconds);
-    split_time.minutes = std::chrono::duration_cast<std::chrono::minutes>(split_time.seconds);
-    split_time.seconds -= std::chrono::duration_cast<std::chrono::seconds>(split_time.minutes);
-    split_time.hours = std::chrono::duration_cast<std::chrono::hours>(split_time.minutes);
-    split_time.minutes -= std::chrono::duration_cast<std::chrono::minutes>(split_time.hours);
-    return split_time;
-  }
-}
+#include "payload_parser.h"
 
 
 TheRun::TheRun(std::shared_ptr<Settings> settings, std::shared_ptr<dpp::cluster> bot) noexcept :
@@ -125,61 +104,17 @@ void TheRun::OnMessage(websocketpp::connection_hdl const handler, websocketpp::c
     return;
   }
  
-  ProcessRunPayload(message->get_payload());
-}
-
-void TheRun::ProcessRunPayload(std::string const& run_payload) noexcept {
-  std::string user;
-  std::string game;
-  std::string category;
-  SplitTime pb_split_time;
-  SplitTime bpt_split_time;
-  try {
-    auto const payload_json = nlohmann::json::parse(run_payload);
-
-    user = payload_json["user"].get<std::string>();
-
-    auto const& run_data = payload_json["run"];
-    game = run_data["game"].get<std::string>();
-    if (0 != game.rfind("Super Mario 64")) {
-      return;
-    }
-
-    auto const run_percentage = run_data["runPercentage"].get<double>();
-    if (run_percentage < 0.85) {
-      return;
-    }
-
-    auto const pb = run_data["pb"].get<long long>();
-    auto const bpt = run_data["bestPossible"].get<long long>();
-    if (pb < bpt) {
-      if (auto const it_user = std::ranges::find(announced_users_, user); it_user != announced_users_.end()) {
-        announced_users_.erase(it_user);
-      }
-
-      return;
-    }
-
-    //auto const current_time = run_data["currentTime"].get<double>();
-    category = run_data["category"].get<std::string>();
-
-    pb_split_time = ::MillisecondsToSplitTime(pb);
-    bpt_split_time = ::MillisecondsToSplitTime(bpt);
-  }
-  catch (std::exception const& exception) {
-    logger_->error("Failed to parse The Run payload '{}'. Error '{}'", run_payload, exception.what());
+  auto const payload_parser = PayloadParser(message->get_payload());
+  if (!payload_parser.IsValidGame() || !payload_parser.IsValidCategory() || !payload_parser.IsAboveThreshold() || !payload_parser.IsPacing()) {
+    announced_users_.erase(payload_parser.GetUser());
     return;
   }
 
-  if (std::ranges::find(announced_users_, user) != announced_users_.end()) {
+  if (announced_users_.contains(payload_parser.GetUser())) {
     return;
   }
 
-  auto const pacepals_message = fmt::format("@Pacepals\nRunner: {}\nCategoria: {} - {}\nPB: {:02}:{:02}:{:02}.{:03}\nBPT: {:02}:{:02}:{:02}.{:03}\n",
-                                            user, game, category,
-                                            pb_split_time.hours.count(), pb_split_time.minutes.count(), pb_split_time.seconds.count(), pb_split_time.milliseconds.count(),
-                                            bpt_split_time.hours.count(), bpt_split_time.minutes.count(), bpt_split_time.seconds.count(), bpt_split_time.milliseconds.count());
+  auto const pacepals_message = fmt::format("{}\n{}", dpp::role::get_mention(settings_->GetRoleId(Settings::Roles::kPacepals)),  payload_parser.GetString());
   bot_->message_create(dpp::message(settings_->GetChannelId(Settings::Channels::kGeneral), pacepals_message));
-
-  announced_users_.insert(user);
+  announced_users_.insert(payload_parser.GetUser());
 }

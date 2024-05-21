@@ -35,6 +35,10 @@ namespace {
       return Settings::Roles::kStreaming;
     }
 
+    if (role == "pacepals") {
+      return Settings::Roles::kPacepals;
+    }
+
     return Settings::Roles::kNone;
   }
 }
