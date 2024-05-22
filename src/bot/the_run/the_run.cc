@@ -105,7 +105,12 @@ void TheRun::OnMessage(websocketpp::connection_hdl const handler, websocketpp::c
   }
  
   auto const payload_parser = PayloadParser(message->get_payload());
-  if (!payload_parser.IsValidGame() || !payload_parser.IsValidCategory() || !payload_parser.IsAboveThreshold() || !payload_parser.IsPacing()) {
+  if (!payload_parser.IsValidGame() || !payload_parser.IsValidCategory() || !payload_parser.IsAboveThreshold() || !payload_parser.IsPacing() || !payload_parser.IsStreaming()) {
+    announced_users_.erase(payload_parser.GetUser());
+    return;
+  }
+
+  if (!payload_parser.IsSuccessfullyParsed()) {
     announced_users_.erase(payload_parser.GetUser());
     return;
   }

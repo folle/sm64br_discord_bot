@@ -62,7 +62,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
   presence_update_futures_.remove_if([](auto const& future) { return (std::future_status::ready == future.wait_for(std::chrono::milliseconds(0))); });
 
   presence_update_futures_.push_back(std::async(std::launch::async, [this, presence_update]() {
-    dpp::user* streaming_user = {};
+    dpp::user* streaming_user{};
     try {
       streaming_user = bot_->guild_get_member_sync(settings_->GetGuildId(), presence_update.rich_presence.user_id).get_user();
     } catch (dpp::rest_exception const& rest_exception) {
@@ -97,7 +97,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
                                                                 streaming_username,
                                                                 streaming_activity->details,
                                                                 streaming_activity->url));
-        dpp::snowflake streaming_message_id = {};
+        dpp::snowflake streaming_message_id{};
         try {
           streaming_message_id = bot_->message_create_sync(streaming_message).id;
         }
@@ -141,7 +141,7 @@ void Sm64brDiscordBot::OnReady(dpp::ready_t const& ready) const noexcept {
 
 void Sm64brDiscordBot::ClearStreamingStatus() const noexcept {
   // Clear streaming roles
-  dpp::snowflake highest_member_id = {};
+  dpp::snowflake highest_member_id{};
   dpp::guild_member_map members;
   do {
     try {
