@@ -13,12 +13,7 @@ public:
 
   PayloadParser(std::string const& payload) noexcept;
 
-  bool IsValidGame() const noexcept;
-  bool IsValidCategory() const noexcept;
-  bool IsAboveThreshold() const noexcept;
-  bool IsPacing() const noexcept;
-  bool IsStreaming() const noexcept;
-  bool IsSuccessfullyParsed() const noexcept;
+  bool IsPingable() const noexcept;
  
   std::string const& GetUser() const noexcept;
   
@@ -32,11 +27,6 @@ private:
 private:
   std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("Payload Parser");
 
-  bool valid_game_{};
-  bool valid_category_{};
-  bool above_threshold_{};
-  bool pacing_{};
-  bool streaming_{};
   bool emulator_{};
   bool successfully_parsed_{};
 

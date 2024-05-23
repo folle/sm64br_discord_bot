@@ -91,27 +91,48 @@ bool PayloadParser::ParseRunData(nlohmann::json const& run_data) {
     return false;
   }
 
-  auto const run_percentage = run_data["runPercentage"].get<double>();
-  if (run_percentage < 0.85) {
+  if (!run_data["currentlyStreaming"].get<bool>()) {
     return false;
   }
 
-  above_threshold_ = true;
+  double ping_threshold_percentage{};
+  long long bpt_time_threshold_milliseconds{};
+  category_ = run_data["category"].get<std::string>();
+  if (0 == category_.rfind("120 Star")) {
+    ping_threshold_percentage = 0.81;
+    bpt_time_threshold_milliseconds = 2570000;
+  } else if (0 == category_.rfind("70 Star")) {
+    ping_threshold_percentage = 0.81;
+    bpt_time_threshold_milliseconds = 2912000;
+  } else if (0 == category_.rfind("16 Star")) {
+    ping_threshold_percentage = 0.91;
+    bpt_time_threshold_milliseconds = 931360;
+  } else if (0 == category_.rfind("1 Star")) {
+    ping_threshold_percentage = 0.81;
+    bpt_time_threshold_milliseconds = 464000;
+  } else if (0 == category_.rfind("0 Star")) {
+    ping_threshold_percentage = 0.78;
+    bpt_time_threshold_milliseconds = 453000;
+  } else {
+    return false;
+  }
 
-  streaming_ = run_data["currentlyStreaming"].get<bool>();
+  if (run_data["runPercentage"].get<double>() < ping_threshold_percentage) {
+    return false;
+  }
 
-  auto const pb_milliseconds = run_data["pb"].get<long long>();
   auto const bpt_milliseconds = run_data["bestPossible"].get<long long>();
+  if (bpt_time_threshold_milliseconds < bpt_milliseconds) {
+    return false;
+  }
+  
+  auto const pb_milliseconds = run_data["pb"].get<long long>();
   if (pb_milliseconds < bpt_milliseconds) {
     return false;
   }
 
-  pacing_ = true;
-
   pb_ = ::SplitMillisecondsToString(pb_milliseconds, false);
   bpt_ = ::SplitMillisecondsToString(bpt_milliseconds, false);
-
-  category_ = run_data["category"].get<std::string>();
 
   emulator_ = run_data["emulator"].get<bool>();
 
@@ -145,27 +166,7 @@ void PayloadParser::ParseSplitsData(nlohmann::json const& splits_data) {
   }
 }
 
-bool PayloadParser::IsValidGame() const noexcept {
-  return valid_game_;
-}
-
-bool PayloadParser::IsValidCategory() const noexcept {
-  return valid_category_;
-}
-
-bool PayloadParser::IsAboveThreshold() const noexcept {
-  return above_threshold_;
-}
-
-bool PayloadParser::IsPacing() const noexcept {
-  return pacing_;
-}
-
-bool PayloadParser::IsStreaming() const noexcept {
-  return streaming_;
-}
-
-bool PayloadParser::IsSuccessfullyParsed() const noexcept {
+bool PayloadParser::IsPingable() const noexcept {
   return successfully_parsed_;
 }
 
