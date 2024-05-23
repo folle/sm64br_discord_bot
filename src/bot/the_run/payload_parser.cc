@@ -34,22 +34,22 @@ namespace {
     };
 
     if (0 != split_time.hours.count()) {
-      return fmt::format("{}{:02}:{:02}:{:02}.{:03}",
+      return fmt::format("{}{}:{:02}:{:02}.{:03}",
                          get_signal_string(split_time.positive),
-                         split_time.hours, split_time.minutes, split_time.seconds, split_time.milliseconds);
+                         split_time.hours.count(), split_time.minutes.count(), split_time.seconds.count(), split_time.milliseconds.count());
     }
 
     if (0 != split_time.minutes.count()) {
-      return fmt::format("{}{:02}:{:02}.{:03}",
+      return fmt::format("{}{}:{:02}.{:03}",
                          get_signal_string(split_time.positive),
-                         split_time.minutes, split_time.seconds, split_time.milliseconds);
+                         split_time.minutes.count(), split_time.seconds.count(), split_time.milliseconds.count());
     }
 
     if (0 != split_time.seconds.count()) {
-      return fmt::format("{}{:02}.{:03}", get_signal_string(split_time.positive), split_time.seconds, split_time.milliseconds);
+      return fmt::format("{}{}.{:03}", get_signal_string(split_time.positive), split_time.seconds.count(), split_time.milliseconds.count());
     }
 
-    return fmt::format("{}0.{:03}", get_signal_string(split_time.positive), split_time.milliseconds);
+    return fmt::format("{}0.{:03}", get_signal_string(split_time.positive), split_time.milliseconds.count());
   }
 
   std::string SplitMillisecondsToString(long long const split_milliseconds, bool const include_signal) {
@@ -133,6 +133,7 @@ bool PayloadParser::ParseRunData(nlohmann::json const& run_data) {
 
   pb_ = ::SplitMillisecondsToString(pb_milliseconds, false);
   bpt_ = ::SplitMillisecondsToString(bpt_milliseconds, false);
+  sob_ = ::SplitMillisecondsToString(run_data["sob"].get<long long>(), false);
 
   emulator_ = run_data["emulator"].get<bool>();
 
@@ -181,16 +182,9 @@ std::string PayloadParser::GetString() const noexcept {
   std::string run_info;
   run_info.reserve(kDiscordMaximumMessageSize);
 
-  run_info.append(fmt::format("Runner: {:<{}}", user_, kFieldSpacing));
-  run_info.append(fmt::format("Categoria: {:<{}}", category_, kFieldSpacing));
-  run_info.append(fmt::format("Plataforma: {}\n", emulator_ ? "Emulador" : "Console"));
-
-  run_info.append(fmt::format("PB: {:<{}}", pb_, kFieldSpacing));
-  run_info.append(fmt::format("BPT: {:<{}}", bpt_, kFieldSpacing));
-  run_info.append(fmt::format("SOB: {:<{}}", sob_, kFieldSpacing));
-  run_info.append(fmt::format("Tentativa: {}\n", attempt_count_));
-
-  run_info.append(fmt::format("{}\n", url_));
+  run_info.append(fmt::format("Runner: {}    Categoria: {}    Plataforma: {}\n", user_, category_, emulator_ ? "Emulador" : "Console" ));
+  run_info.append(fmt::format("PB: {}    BPT: {}    SOB: {}    Tentativa: {}\n", pb_, bpt_, sob_, attempt_count_));
+  run_info.append(fmt::format("{}\n```", url_));
 
   size_t biggest_split_name_length{};
   size_t biggest_split_pb_difference_length{};
@@ -213,9 +207,16 @@ std::string PayloadParser::GetString() const noexcept {
 
   std::ranges::for_each(splits_, [&run_info, &biggest_split_name_length, &biggest_split_pb_difference_length, &biggest_split_time_length](auto const& split) {
     auto const& split_info = split.second;
-    run_info.append(fmt::format("\n{:<{}}", split_info.name, biggest_split_name_length - split_info.name.size() + kFieldSpacing));
-    run_info.append(fmt::format("{:>{}}", split_info.pb_difference, biggest_split_pb_difference_length - split_info.pb_difference.size()));
-    run_info.append(fmt::format("{:>{}}", split_info.time, biggest_split_time_length - split_info.time.size() + kFieldSpacing));
+    if (split_info.pb_difference.empty()) {
+      return;
+    }
+    
+    run_info.append(fmt::format("{}", split_info.name));
+    run_info.append(fmt::format("{:<{}}", "", biggest_split_name_length - split_info.name.size() + kFieldSpacing));
+    run_info.append(fmt::format("{:<{}}", "", biggest_split_pb_difference_length - split_info.pb_difference.size() + kFieldSpacing));
+    run_info.append(fmt::format("[{}]", split_info.pb_difference));
+    run_info.append(fmt::format("{:<{}}", "", biggest_split_time_length - split_info.time.size() + kFieldSpacing));
+    run_info.append(fmt::format("{}\n", split_info.time));
   });
 
   run_info.append("```");
