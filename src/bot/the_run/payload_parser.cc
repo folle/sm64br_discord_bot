@@ -175,11 +175,21 @@ std::string const& PayloadParser::GetUser() const noexcept {
 
 std::string PayloadParser::GetString() const noexcept {
   constexpr size_t kDiscordMaximumMessageSize = 2000;
+  constexpr size_t kFieldSpacing = 4;
 
   std::string run_info;
   run_info.reserve(kDiscordMaximumMessageSize);
 
-  run_info.append("```");
+  run_info.append(fmt::format("Runner: {:<{}}", user_, kFieldSpacing));
+  run_info.append(fmt::format("Categoria: {:<{}}", category_, kFieldSpacing));
+  run_info.append(fmt::format("Plataforma: {}\n", emulator_ ? "Emulador" : "Console"));
+
+  run_info.append(fmt::format("PB: {:<{}}", pb_, kFieldSpacing));
+  run_info.append(fmt::format("BPT: {:<{}}", bpt_, kFieldSpacing));
+  run_info.append(fmt::format("SOB: {:<{}}", sob_, kFieldSpacing));
+  run_info.append(fmt::format("Tentativa: {}\n", attempt_count_));
+
+  run_info.append(fmt::format("{}\n", url_));
 
   size_t biggest_split_name_length{};
   size_t biggest_split_pb_difference_length{};
@@ -201,8 +211,6 @@ std::string PayloadParser::GetString() const noexcept {
   });
 
   std::ranges::for_each(splits_, [&run_info, &biggest_split_name_length, &biggest_split_pb_difference_length, &biggest_split_time_length](auto const& split) {
-    constexpr size_t kFieldSpacing = 4;
-
     auto const& split_info = split.second;
     run_info.append(fmt::format("\n{:<{}}", split_info.name, biggest_split_name_length - split_info.name.size() + kFieldSpacing));
     run_info.append(fmt::format("{:>{}}", split_info.pb_difference, biggest_split_pb_difference_length - split_info.pb_difference.size()));
