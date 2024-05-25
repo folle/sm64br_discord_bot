@@ -17,6 +17,33 @@
     }
   },
   "the_run": {
-    "endpoint": "wss://fh76djw1t9.execute-api.eu-west-1.amazonaws.com/prod"
+    "endpoint": "wss://fh76djw1t9.execute-api.eu-west-1.amazonaws.com/prod",
+    "thresholds": [
+      {
+        "category": "0 Star",
+        "bpt": 453000,
+        "percentage": 0.78
+      },
+      {
+        "category": "1 Star",
+        "bpt": 464000,
+        "percentage": 0.81
+      },
+      {
+        "category": "16 Star",
+        "bpt": 931360,
+        "percentage": 0.91
+      },
+      {
+        "category": "70 Star",
+        "bpt": 2912000,
+        "percentage": 0.81
+      },
+      {
+        "category": "120 Star",
+        "bpt": 2570000,
+        "percentage": 0.81
+      }
+    ]
   }
 }

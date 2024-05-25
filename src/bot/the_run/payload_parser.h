@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 
 #include "logger/logger.h"
+#include "settings/settings.h"
 
 
 class PayloadParser final {
@@ -11,7 +12,7 @@ public:
   PayloadParser() = delete;
   ~PayloadParser() = default;
 
-  PayloadParser(std::string const& payload) noexcept;
+  PayloadParser(Settings const& settings, std::string const& payload) noexcept;
 
   bool IsPingable() const noexcept;
  
@@ -20,8 +21,8 @@ public:
   std::string GetString() const noexcept;
 
 private:
-  void Parse(std::string const& payload) noexcept;
-  bool ParseRunData(nlohmann::json const& run_data);
+  void Parse(Settings const& settings, std::string const& payload) noexcept;
+  bool ParseRunData(Settings const& settings, nlohmann::json const& run_data);
   void ParseSplitsData(nlohmann::json const& splits_data);
 
 private:

@@ -6,7 +6,7 @@
 
 
 namespace {
-  Settings::Channels ServerChannelStringToEnum(std::string const& channel) {
+  Settings::Channels ServerChannelStringToEnum(std::string const& channel) noexcept {
     if (channel == "general") {
       return Settings::Channels::kGeneral;
     }
@@ -26,7 +26,7 @@ namespace {
     return Settings::Channels::kNone;
   }
 
-  Settings::Roles ServerRoleStringToEnum(std::string const& role) {
+  Settings::Roles ServerRoleStringToEnum(std::string const& role) noexcept {
     if (role == "moderator") {
       return Settings::Roles::kModerator;
     }
@@ -40,6 +40,30 @@ namespace {
     }
 
     return Settings::Roles::kNone;
+  }
+
+  Settings::Categories CategoryStringToEnum(std::string const& category) noexcept {
+    if (category == "0 Star") {
+      return Settings::Categories::k0Star;
+    }
+
+    if (category == "1 Star") {
+      return Settings::Categories::k1Star;
+    }
+
+    if (category == "16 Star") {
+      return Settings::Categories::k16Star;
+    }
+
+    if (category == "70 Star") {
+      return Settings::Categories::k70Star;
+    }
+
+    if (category == "120 Star") {
+      return Settings::Categories::k120Star;
+    }
+
+    return Settings::Categories::kNone;
   }
 }
 
@@ -58,14 +82,27 @@ Settings::Settings(std::string const& settings_file_path) {
   for (auto it_role = roles_json.begin(); it_role != roles_json.end(); ++it_role) {
     roles_ids_[::ServerRoleStringToEnum(it_role.key())] = it_role.value().get<dpp::snowflake>();
   }
+  roles_ids_[Roles::kNone] = dpp::snowflake{};
 
   auto const& channels_json = server_data["channels"];
   for (auto it_channel = channels_json.begin(); it_channel != channels_json.end(); ++it_channel) {
     channels_ids_[::ServerChannelStringToEnum(it_channel.key())] = it_channel.value().get<dpp::snowflake>();
   }
+  channels_ids_[Channels::kNone] = dpp::snowflake{};
 
   auto const& the_run_data = settings_json["the_run"];
   the_run_endpoint_ = the_run_data["endpoint"].get<std::string>();
+
+  auto const& thresholds_json = the_run_data["thresholds"];
+  for (auto it_threshold = thresholds_json.begin(); it_threshold != thresholds_json.end(); ++it_threshold) {
+    auto const category = ::CategoryStringToEnum(it_threshold.value()["category"].get<std::string>());
+
+    TheRunThresholds thresholds;
+    thresholds.bpt = it_threshold.value()["bpt"].get<long long>();
+    thresholds.percentage = it_threshold.value()["percentage"].get<double>();
+    the_run_thresholds_[category] = std::move(thresholds);
+  }
+  the_run_thresholds_[Categories::kNone] = {};
 }
 
 std::string const& Settings::GetBotToken() const noexcept {
@@ -86,4 +123,8 @@ dpp::snowflake Settings::GetChannelId(Channels const channel) const noexcept  {
 
 std::string const& Settings::GetTheRunEndpoint() const noexcept {
   return the_run_endpoint_;
+}
+
+Settings::TheRunThresholds const& Settings::GetTheRunThresholds(Categories const category) const noexcept {
+  return the_run_thresholds_.at(category);
 }

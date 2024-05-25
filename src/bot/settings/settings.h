@@ -24,6 +24,20 @@ public:
     kPacepals
   };
 
+  enum class Categories {
+    kNone,
+    k0Star,
+    k1Star,
+    k16Star,
+    k70Star,
+    k120Star
+  };
+
+  struct TheRunThresholds {
+    double percentage{};
+    long long bpt{};
+  };
+
   Settings() = delete;
   ~Settings() = default;
 
@@ -36,6 +50,7 @@ public:
   dpp::snowflake GetChannelId(Channels const channel) const noexcept;
 
   std::string const& GetTheRunEndpoint() const noexcept;
+  TheRunThresholds const& GetTheRunThresholds(Categories const category) const noexcept;
 
 private:
   std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("Settings");
@@ -47,4 +62,5 @@ private:
   std::map<Channels, dpp::snowflake> channels_ids_;
 
   std::string the_run_endpoint_;
+  std::map<Categories, TheRunThresholds> the_run_thresholds_;
 };

@@ -104,7 +104,7 @@ void TheRun::OnMessage(websocketpp::connection_hdl const handler, websocketpp::c
     return;
   }
  
-  auto const payload_parser = PayloadParser(message->get_payload());
+  auto const payload_parser = PayloadParser(*settings_, message->get_payload());
   if (!payload_parser.IsPingable()) {
     announced_users_.erase(payload_parser.GetUser());
     return;

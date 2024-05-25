@@ -59,18 +59,18 @@ namespace {
 }
 
 
-PayloadParser::PayloadParser(std::string const& payload) noexcept {
-  Parse(payload);
+PayloadParser::PayloadParser(Settings const& settings, std::string const& payload) noexcept {
+  Parse(settings, payload);
 }
 
-void PayloadParser::Parse(std::string const& payload) noexcept {
+void PayloadParser::Parse(Settings const& settings, std::string const& payload) noexcept {
  try {
     auto const payload_json = nlohmann::json::parse(payload);
 
     user_ = payload_json["user"].get<std::string>();
 
     auto const& run_data = payload_json["run"];
-    if (!ParseRunData(run_data)) {
+    if (!ParseRunData(settings, run_data)) {
       return;
     }
 
@@ -85,7 +85,7 @@ void PayloadParser::Parse(std::string const& payload) noexcept {
   successfully_parsed_ = true;
 }
 
-bool PayloadParser::ParseRunData(nlohmann::json const& run_data) {
+bool PayloadParser::ParseRunData(Settings const& settings, nlohmann::json const& run_data) {
   auto const game = run_data["game"].get<std::string>();
   if (0 != game.rfind("Super Mario 64")) {
     return false;
@@ -95,34 +95,30 @@ bool PayloadParser::ParseRunData(nlohmann::json const& run_data) {
     return false;
   }
 
-  double ping_threshold_percentage{};
-  long long bpt_time_threshold_milliseconds{};
+  Settings::Categories category{};
   category_ = run_data["category"].get<std::string>();
   if (0 == category_.rfind("120 Star")) {
-    ping_threshold_percentage = 0.81;
-    bpt_time_threshold_milliseconds = 2570000;
+    category = Settings::Categories::k120Star;
   } else if (0 == category_.rfind("70 Star")) {
-    ping_threshold_percentage = 0.81;
-    bpt_time_threshold_milliseconds = 2912000;
+    category = Settings::Categories::k70Star;
   } else if (0 == category_.rfind("16 Star")) {
-    ping_threshold_percentage = 0.91;
-    bpt_time_threshold_milliseconds = 931360;
+    category = Settings::Categories::k16Star;
   } else if (0 == category_.rfind("1 Star")) {
-    ping_threshold_percentage = 0.81;
-    bpt_time_threshold_milliseconds = 464000;
+    category = Settings::Categories::k1Star;
   } else if (0 == category_.rfind("0 Star")) {
-    ping_threshold_percentage = 0.78;
-    bpt_time_threshold_milliseconds = 453000;
+    category = Settings::Categories::k0Star;
   } else {
     return false;
   }
 
-  if (run_data["runPercentage"].get<double>() < ping_threshold_percentage) {
+  auto const thresholds = settings.GetTheRunThresholds(category);
+
+  if (run_data["runPercentage"].get<double>() < thresholds.percentage) {
     return false;
   }
 
   auto const bpt_milliseconds = run_data["bestPossible"].get<long long>();
-  if (bpt_time_threshold_milliseconds < bpt_milliseconds) {
+  if (thresholds.bpt < bpt_milliseconds) {
     return false;
   }
   
