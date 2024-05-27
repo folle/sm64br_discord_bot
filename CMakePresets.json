@@ -8,7 +8,7 @@
     "configurePresets": [
         {
             "name": "default",
-            "description": "Common settings between Windows and Linux builds.",
+            "description": "Common settings between Windows, Linux and macOS builds.",
             "hidden": true,
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/out/${presetName}",
