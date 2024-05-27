@@ -118,7 +118,7 @@ bool PayloadParser::ParseRunData(Settings const& settings, nlohmann::json const&
   }
 
   auto const bpt_milliseconds = run_data["bestPossible"].get<long long>();
-  if (thresholds.bpt < bpt_milliseconds) {
+  if (bpt_milliseconds < thresholds.bpt) {
     return false;
   }
   
