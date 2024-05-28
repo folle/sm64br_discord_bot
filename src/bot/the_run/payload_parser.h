@@ -23,7 +23,7 @@ public:
 private:
   void Parse(Settings const& settings, std::string const& payload) noexcept;
   bool ParseRunData(Settings const& settings, nlohmann::json const& run_data);
-  void ParseSplitsData(nlohmann::json const& splits_data);
+  bool ParseSplitsData(nlohmann::json const& splits_data);
 
 private:
   std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("Payload Parser");

@@ -114,6 +114,8 @@ void TheRun::OnMessage(websocketpp::connection_hdl const handler, websocketpp::c
     return;
   }
 
+  logger_->info("Payload triggered a ping '{}'", message->get_payload());
+
   auto const pacepals_message = fmt::format("{}\n{}", dpp::role::get_mention(settings_->GetRoleId(Settings::Roles::kPacepals)),  payload_parser.GetString());
   bot_->message_create(dpp::message(settings_->GetChannelId(Settings::Channels::kGeneral), pacepals_message));
   announced_users_.insert(payload_parser.GetUser());

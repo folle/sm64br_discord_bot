@@ -75,7 +75,9 @@ void PayloadParser::Parse(Settings const& settings, std::string const& payload) 
     }
 
     auto const& splits_data = run_data["splits"];
-    ParseSplitsData(splits_data);
+    if (!ParseSplitsData(splits_data)) {
+      return;
+    }
   }
   catch (std::exception const& exception) {
     logger_->error("Failed to parse The Run payload '{}'. Error '{}'", payload, exception.what());
@@ -142,7 +144,7 @@ bool PayloadParser::ParseRunData(Settings const& settings, nlohmann::json const&
   return true;
 }
 
-void PayloadParser::ParseSplitsData(nlohmann::json const& splits_data) {
+bool PayloadParser::ParseSplitsData(nlohmann::json const& splits_data) {
   for (auto const& split_data : splits_data) {
     auto const split_index = static_cast<size_t>(std::stoll(split_data["index"].get<std::string>()));
 
@@ -156,11 +158,13 @@ void PayloadParser::ParseSplitsData(nlohmann::json const& splits_data) {
       auto const split_pb = split_data["pbSplitTime"].get<long long>();
       split_info.pb_difference = SplitMillisecondsToString(split_time - split_pb, true);
     } catch (std::exception const& exception) {
-      // Do nothing
+      break;
     }
 
-    splits_[split_index] = split_info;
+    splits_[split_index] = std::move(split_info);
   }
+
+  return !splits_.empty();
 }
 
 bool PayloadParser::IsPingable() const noexcept {
@@ -178,9 +182,8 @@ std::string PayloadParser::GetString() const noexcept {
   std::string run_info;
   run_info.reserve(kDiscordMaximumMessageSize);
 
-  run_info.append(fmt::format("Runner: {}    Categoria: {}    Plataforma: {}\n", user_, category_, emulator_ ? "Emulador" : "Console" ));
-  run_info.append(fmt::format("PB: {}    BPT: {}    SOB: {}    Tentativa: {}\n", pb_, bpt_, sob_, attempt_count_));
-  run_info.append(fmt::format("{}\n```", url_));
+  run_info.append(fmt::format("**Runner: {}**\nCategoria: {}\nPlataforma: {}\nPB: {}\nBPT: {}\nSOB: {}\nTentativa: {}\n{}", 
+                              user_, category_, emulator_ ? "Emulador" : "Console", pb_, bpt_, sob_, attempt_count_, url_));
 
   size_t biggest_split_name_length{};
   size_t biggest_split_pb_difference_length{};
@@ -209,7 +212,7 @@ std::string PayloadParser::GetString() const noexcept {
     
     run_info.append(fmt::format("{}", split_info.name));
     run_info.append(fmt::format("{:<{}}", "", biggest_split_name_length - split_info.name.size() + kFieldSpacing));
-    run_info.append(fmt::format("{:<{}}", "", biggest_split_pb_difference_length - split_info.pb_difference.size() + kFieldSpacing));
+    run_info.append(fmt::format("{:<{}}", "", biggest_split_pb_difference_length - split_info.pb_difference.size()));
     run_info.append(fmt::format("[{}]", split_info.pb_difference));
     run_info.append(fmt::format("{:<{}}", "", biggest_split_time_length - split_info.time.size() + kFieldSpacing));
     run_info.append(fmt::format("{}\n", split_info.time));
