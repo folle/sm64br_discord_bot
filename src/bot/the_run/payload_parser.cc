@@ -182,7 +182,7 @@ std::string PayloadParser::GetString() const noexcept {
   std::string run_info;
   run_info.reserve(kDiscordMaximumMessageSize);
 
-  run_info.append(fmt::format("**Runner: {}**\nCategoria: {}\nPlataforma: {}\nPB: {}\nBPT: {}\nSOB: {}\nTentativa: {}\n{}", 
+  run_info.append(fmt::format("**Runner: {}**\nCategoria: {}\nPlataforma: {}\nPB: {}\nBPT: {}\nSOB: {}\nTentativa: {}\n{}\n", 
                               user_, category_, emulator_ ? "Emulador" : "Console", pb_, bpt_, sob_, attempt_count_, url_));
 
   size_t biggest_split_name_length{};
@@ -203,6 +203,8 @@ std::string PayloadParser::GetString() const noexcept {
       biggest_split_time_length = split_info.time.size();
     }
   });
+
+  run_info.append("```");
 
   std::ranges::for_each(splits_, [&run_info, &biggest_split_name_length, &biggest_split_pb_difference_length, &biggest_split_time_length](auto const& split) {
     auto const& split_info = split.second;
