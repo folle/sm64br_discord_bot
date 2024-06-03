@@ -132,6 +132,6 @@ Settings::TheRunThresholds const& Settings::GetTheRunThresholds(Categories const
   return the_run_thresholds_.at(category);
 }
 
-std::string const& Settings::GetSentryDns() const noexcept {
-  return sentry_dns_;
+std::string const& Settings::GetSentryDsn() const noexcept {
+  return sentry_dsn_;
 }
