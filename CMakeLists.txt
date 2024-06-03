@@ -34,7 +34,9 @@ add_executable(${PROJECT_NAME}
                src/bot/the_run/the_run.cc
                src/bot/the_run/the_run.h
                src/logger/logger.cc
-               src/logger/logger.h)
+               src/logger/logger.h
+               src/sentry/sentry.cc
+               src/sentry/sentry.h)
 
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -48,6 +50,7 @@ find_package(fmt CONFIG REQUIRED)                                               
 find_package(nlohmann_json CONFIG REQUIRED)                                         # Settings storage, therun.gg parsing
 find_package(Opus CONFIG REQUIRED)                                                  # DPP dependency
 find_package(OpenSSL REQUIRED)                                                      # DPP dependency
+find_package(sentry CONFIG REQUIRED)                                                # Sentry stats
 find_package(spdlog CONFIG REQUIRED)                                                # Logging
 find_package(websocketpp CONFIG REQUIRED)                                           # therun.gg integration
 find_package(ZLIB REQUIRED)                                                         # DPP dependency
@@ -63,6 +66,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
                       nlohmann_json::nlohmann_json
                       OpenSSL::SSL
                       Opus::opus
+                      sentry::sentry
                       spdlog::spdlog_header_only
                       websocketpp::websocketpp
                       ZLIB::ZLIB)

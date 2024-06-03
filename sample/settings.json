@@ -45,5 +45,8 @@
         "percentage": 0.81
       }
     ]
+  },
+  "sentry": {
+    "dsn": ""
   }
 }

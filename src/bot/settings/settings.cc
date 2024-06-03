@@ -103,6 +103,9 @@ Settings::Settings(std::string const& settings_file_path) {
     the_run_thresholds_[category] = std::move(thresholds);
   }
   the_run_thresholds_[Categories::kNone] = {};
+
+  auto const& sentry_data = settings_json["sentry"];
+  sentry_dsn_ = sentry_data["dsn"].get<std::string>();
 }
 
 std::string const& Settings::GetBotToken() const noexcept {
@@ -127,4 +130,8 @@ std::string const& Settings::GetTheRunEndpoint() const noexcept {
 
 Settings::TheRunThresholds const& Settings::GetTheRunThresholds(Categories const category) const noexcept {
   return the_run_thresholds_.at(category);
+}
+
+std::string const& Settings::GetSentryDns() const noexcept {
+  return sentry_dns_;
 }

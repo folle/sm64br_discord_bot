@@ -52,6 +52,8 @@ public:
   std::string const& GetTheRunEndpoint() const noexcept;
   TheRunThresholds const& GetTheRunThresholds(Categories const category) const noexcept;
 
+  std::string const& GetSentryDsn() const noexcept;
+
 private:
   std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("Settings");
 
@@ -63,4 +65,6 @@ private:
 
   std::string the_run_endpoint_;
   std::map<Categories, TheRunThresholds> the_run_thresholds_;
+
+  std::string sentry_dsn_;
 };
