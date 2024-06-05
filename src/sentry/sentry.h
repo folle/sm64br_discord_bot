@@ -1,20 +1,24 @@
 #pragma once
 
-#include <sentry.h>
-
-#include "settings/settings.h"
-
+#include <memory>
+#include <mutex>
+#include <string>
 
 class Sentry final {
 public:
-  static Sentry& Get(std::shared_ptr<Settings> settings) noexcept;
+  static Sentry& Get() noexcept;
+
+  void CaptureEventInfo(std::string const& name, std::string const& message) noexcept;
+  void CaptureEventWarn(std::string const& name, std::string const& message) noexcept;
+  void CaptureEventError(std::string const& name, std::string const& message) noexcept;
 
 private:
-  Sentry() = delete;
+  Sentry() noexcept;
   ~Sentry();
-
-  Sentry(std::shared_ptr<Settings> settings) noexcept;
 
   Sentry(Sentry const&) = delete;
   void operator=(Sentry const&) = delete;
+
+private:
+  std::mutex capture_event_mutex_;
 };

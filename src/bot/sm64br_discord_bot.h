@@ -1,8 +1,17 @@
 #pragma once
 
-#include "message/message_handler.h"
-#include "the_run/the_run.h"
+#include <future>
+#include <list>
+#include <map>
+#include <memory>
+#include <mutex>
 
+#include <dpp/dpp.h>
+
+#include "logger/logger_factory.h"
+#include "message/message_handler.h"
+#include "settings/settings.h"
+#include "the_run/the_run.h"
 
 class Sm64brDiscordBot final {
 public:
@@ -20,17 +29,17 @@ private:
   void OnGuildMemberRemove(dpp::guild_member_remove_t const& guild_member_remove) const noexcept;
 
   void ClearStreamingStatus() const noexcept;
+  void ClearStreamingRoles() const noexcept;
+  void ClearStreamingMessages() const noexcept;
 
 private:
-  std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("SM64BR Discord Bot");
+  Logger const logger_ = LoggerFactory::Get().Create("SM64BR Discord Bot");
 
-  std::shared_ptr<Settings> const settings_ = std::make_shared<Settings>("settings/settings.json");
-
-  std:: shared_ptr<dpp::cluster> const bot_ = std::make_shared<dpp::cluster>(settings_->GetBotToken(), dpp::i_all_intents);
+  std:: shared_ptr<dpp::cluster> const bot_ = std::make_shared<dpp::cluster>(Settings::Get().GetBotToken(), dpp::i_all_intents);
   
-  MessageHandler message_handler_ = MessageHandler(settings_, bot_);
+  MessageHandler message_handler_ = MessageHandler(bot_);
 
-  TheRun the_run = TheRun(settings_, bot_);
+  TheRun the_run = TheRun(bot_);
 
   std::map<dpp::snowflake, dpp::snowflake> streaming_users_ids_and_messages_ids_;
   std::mutex on_presence_update_mutex_;

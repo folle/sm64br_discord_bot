@@ -4,7 +4,6 @@
 
 #include <nlohmann/json.hpp>
 
-
 namespace {
   Settings::Channels ServerChannelStringToEnum(std::string const& channel) noexcept {
     if (channel == "general") {
@@ -67,9 +66,13 @@ namespace {
   }
 }
 
+Settings& Settings::Get() noexcept {
+  static Settings settings;
+  return settings;
+}
 
-Settings::Settings(std::string const& settings_file_path) {
-  std::ifstream settings_file(settings_file_path);
+Settings::Settings() {
+  std::ifstream settings_file("settings/settings.json");
   auto const settings_json = nlohmann::json::parse(settings_file);
 
   auto const& bot_data = settings_json["bot"];

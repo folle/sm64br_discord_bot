@@ -35,6 +35,8 @@ add_executable(${PROJECT_NAME}
                src/bot/the_run/the_run.h
                src/logger/logger.cc
                src/logger/logger.h
+               src/logger/logger_factory.cc
+               src/logger/logger_factory.h
                src/sentry/sentry.cc
                src/sentry/sentry.h)
 

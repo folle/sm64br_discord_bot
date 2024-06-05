@@ -3,16 +3,14 @@
 #include <map>
 #include <nlohmann/json.hpp>
 
-#include "logger/logger.h"
-#include "settings/settings.h"
-
+#include "logger/logger_factory.h"
 
 class PayloadParser final {
 public:
   PayloadParser() = delete;
   ~PayloadParser() = default;
 
-  PayloadParser(Settings const& settings, std::string const& payload) noexcept;
+  PayloadParser(std::string const& payload) noexcept;
 
   bool IsPingable() const noexcept;
  
@@ -21,12 +19,12 @@ public:
   std::string GetString() const noexcept;
 
 private:
-  void Parse(Settings const& settings, std::string const& payload) noexcept;
-  bool ParseRunData(Settings const& settings, nlohmann::json const& run_data);
+  void Parse(std::string const& payload) noexcept;
+  bool ParseRunData(nlohmann::json const& run_data);
   bool ParseSplitsData(nlohmann::json const& splits_data);
 
 private:
-  std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("Payload Parser");
+  Logger const logger_ = LoggerFactory::Get().Create("Payload Parser");
 
   bool emulator_{};
   bool successfully_parsed_{};
