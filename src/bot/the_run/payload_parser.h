@@ -1,6 +1,8 @@
 #pragma once
 
 #include <map>
+#include <string>
+
 #include <nlohmann/json.hpp>
 
 #include "logger/logger_factory.h"

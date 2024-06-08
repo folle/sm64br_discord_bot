@@ -3,7 +3,6 @@
 #include <memory>
 #include <string>
 
-#include <fmt/core.h>
 #include <fmt/format.h>
 #include <spdlog/async.h>
 
