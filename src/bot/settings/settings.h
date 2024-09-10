@@ -1,11 +1,9 @@
 #pragma once
 
 #include <map>
+#include <string>
 
 #include <dpp/dpp.h>
-
-#include "logger/logger.h"
-
 
 class Settings final {
 public:
@@ -38,10 +36,7 @@ public:
     long long bpt{};
   };
 
-  Settings() = delete;
-  ~Settings() = default;
-
-  Settings(std::string const& settings_file_path);
+  static Settings& Get() noexcept;
 
   std::string const& GetBotToken() const noexcept;
 
@@ -52,9 +47,16 @@ public:
   std::string const& GetTheRunEndpoint() const noexcept;
   TheRunThresholds const& GetTheRunThresholds(Categories const category) const noexcept;
 
-private:
-  std::shared_ptr<spdlog::async_logger> const logger_ = Logger::Get().Create("Settings");
+  std::string const& GetSentryDsn() const noexcept;
 
+private:
+  Settings();
+  ~Settings() = default;
+
+  Settings(Settings const&) = delete;
+  void operator=(Settings const&) = delete;
+
+private:
   std::string bot_token_;
 
   dpp::snowflake guild_id_;
@@ -63,4 +65,6 @@ private:
 
   std::string the_run_endpoint_;
   std::map<Categories, TheRunThresholds> the_run_thresholds_;
+
+  std::string sentry_dsn_;
 };

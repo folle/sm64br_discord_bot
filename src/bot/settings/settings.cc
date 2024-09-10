@@ -4,7 +4,6 @@
 
 #include <nlohmann/json.hpp>
 
-
 namespace {
   Settings::Channels ServerChannelStringToEnum(std::string const& channel) noexcept {
     if (channel == "general") {
@@ -67,9 +66,13 @@ namespace {
   }
 }
 
+Settings& Settings::Get() noexcept {
+  static Settings settings;
+  return settings;
+}
 
-Settings::Settings(std::string const& settings_file_path) {
-  std::ifstream settings_file(settings_file_path);
+Settings::Settings() {
+  std::ifstream settings_file("settings/settings.json");
   auto const settings_json = nlohmann::json::parse(settings_file);
 
   auto const& bot_data = settings_json["bot"];
@@ -103,6 +106,9 @@ Settings::Settings(std::string const& settings_file_path) {
     the_run_thresholds_[category] = std::move(thresholds);
   }
   the_run_thresholds_[Categories::kNone] = {};
+
+  auto const& sentry_data = settings_json["sentry"];
+  sentry_dsn_ = sentry_data["dsn"].get<std::string>();
 }
 
 std::string const& Settings::GetBotToken() const noexcept {
@@ -127,4 +133,8 @@ std::string const& Settings::GetTheRunEndpoint() const noexcept {
 
 Settings::TheRunThresholds const& Settings::GetTheRunThresholds(Categories const category) const noexcept {
   return the_run_thresholds_.at(category);
+}
+
+std::string const& Settings::GetSentryDsn() const noexcept {
+  return sentry_dsn_;
 }

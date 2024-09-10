@@ -1,25 +1,40 @@
 #pragma once
 
-#include <spdlog/async.h>
-#include <spdlog/sinks/daily_file_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
+#include <memory>
+#include <string>
 
+#include <fmt/format.h>
+#include <spdlog/async.h>
+
+#include "sentry/sentry.h"
 
 class Logger final {
 public:
-  static Logger& Get() noexcept;
-
-  std::shared_ptr<spdlog::async_logger> Create(std::string const& name) const noexcept;
-
-private:
-  Logger();
+  Logger() = delete;
   ~Logger();
 
-  Logger(Logger const&) = delete;
-  void operator=(Logger const&) = delete;
+  Logger(std::shared_ptr<spdlog::async_logger>&& logger_) noexcept;
+
+  template <typename... Args>
+  void Info(fmt::format_string<Args...> fmt, Args&&... args) const noexcept {
+    auto const message = fmt::format(fmt, std::forward<Args>(args)...);
+    logger_->info(message);
+  }
+
+  template <typename... Args>
+  void Warn(fmt::format_string<Args...> fmt, Args&&... args) const noexcept {
+    auto const message = fmt::format(fmt, std::forward<Args>(args)...);
+    logger_->warn(message);
+  }
+
+  template <typename... Args>
+  void Error(fmt::format_string<Args...> fmt, Args&&... args) const noexcept {
+    auto const message = fmt::format(fmt, std::forward<Args>(args)...);
+    logger_->error(message);
+
+    Sentry::Get().CaptureEventError(logger_->name(), message);
+  }
 
 private:
-  std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> const stdout_sink_ = std::make_shared<spdlog::sinks::stdout_color_sink_mt >();
-  std::shared_ptr<spdlog::sinks::daily_file_sink_mt> const file_sink_ = std::make_shared<spdlog::sinks::daily_file_sink_mt>("logs/log.txt", 0, 0);
-  std::vector<spdlog::sink_ptr> const sinks_;
+  std::shared_ptr<spdlog::async_logger> const logger_;
 };

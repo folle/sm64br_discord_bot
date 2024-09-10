@@ -2,9 +2,11 @@
 
 #include <chrono>
 #include <cstdlib>
+#include <exception>
 #include <ranges>
 #include <fmt/format.h>
 
+#include "settings/settings.h"
 
 namespace {
   struct SplitTime {
@@ -59,18 +61,18 @@ namespace {
 }
 
 
-PayloadParser::PayloadParser(Settings const& settings, std::string const& payload) noexcept {
-  Parse(settings, payload);
+PayloadParser::PayloadParser(std::string const& payload) noexcept {
+  Parse(payload);
 }
 
-void PayloadParser::Parse(Settings const& settings, std::string const& payload) noexcept {
+void PayloadParser::Parse(std::string const& payload) noexcept {
  try {
     auto const payload_json = nlohmann::json::parse(payload);
 
     user_ = payload_json["user"].get<std::string>();
 
     auto const& run_data = payload_json["run"];
-    if (!ParseRunData(settings, run_data)) {
+    if (!ParseRunData(run_data)) {
       return;
     }
 
@@ -80,14 +82,14 @@ void PayloadParser::Parse(Settings const& settings, std::string const& payload) 
     }
   }
   catch (std::exception const& exception) {
-    logger_->error("Failed to parse The Run payload '{}'. Error '{}'", payload, exception.what());
+    logger_.Error("Failed to parse The Run payload '{}'. Error '{}'", payload, exception.what());
     return;
   }
 
   successfully_parsed_ = true;
 }
 
-bool PayloadParser::ParseRunData(Settings const& settings, nlohmann::json const& run_data) {
+bool PayloadParser::ParseRunData(nlohmann::json const& run_data) {
   auto const game = run_data["game"].get<std::string>();
   if (0 != game.rfind("Super Mario 64")) {
     return false;
@@ -113,7 +115,7 @@ bool PayloadParser::ParseRunData(Settings const& settings, nlohmann::json const&
     return false;
   }
 
-  auto const thresholds = settings.GetTheRunThresholds(category);
+  auto const thresholds = Settings::Get().GetTheRunThresholds(category);
 
   if (run_data["runPercentage"].get<double>() < thresholds.percentage) {
     return false;

@@ -3,8 +3,7 @@
 
 #include "bot/sm64br_discord_bot.h"
 
-
-int main(int argc, char** argv) {
+int main(const int argc, char const *const *const argv) {
   try {
     Sm64brDiscordBot bot;
     bot.Start();

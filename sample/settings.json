@@ -1,6 +1,6 @@
 {
   "bot": {
-    "token": "MTE3Njg1Mzk0NTcxNzYzMzA5NQ.G7hEDJ.t2cnL8sYo_d8-MuhRhgD-pO8ap2QIzdIlvJFPk"
+    "token": ""
   },
   "server": {
     "guild": 1018970433627885568,
@@ -45,5 +45,8 @@
         "percentage": 0.81
       }
     ]
+  },
+  "sentry": {
+    "dsn": ""
   }
 }
