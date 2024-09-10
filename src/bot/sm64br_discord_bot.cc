@@ -78,7 +78,9 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
     auto const& streaming_username = streaming_user->format_username();
     auto const& activies = presence_update.rich_presence.activities;
     auto const streaming_activity = std::find_if(activies.cbegin(), activies.cend(), [](auto const& activity) {
-      return (activity.type == dpp::activity_type::at_streaming) && (activity.name == "Twitch") && (activity.state == "Super Mario 64");
+      return (activity.type == dpp::activity_type::at_streaming) &&
+        (((activity.name == "Twitch") && (activity.state == "Super Mario 64")) ||
+         ((activity.name == "YouTube") && (activity.details.contains("Mario 64") || activity.details.contains("SM64"))));
     });
     auto const is_streaming_sm64 = activies.cend() != streaming_activity;
 
