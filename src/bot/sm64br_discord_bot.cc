@@ -1,7 +1,6 @@
 #include "sm64br_discord_bot.h"
 
 #include <algorithm>
-#include <limits>
 
 #include <fmt/format.h>
 
@@ -167,20 +166,20 @@ void Sm64brDiscordBot::ClearStreamingRoles() const noexcept {
 }
 
 void Sm64brDiscordBot::ClearStreamingMessages() const noexcept {
-  auto earliest_streaming_message_id = std::numeric_limits<dpp::snowflake>::max();
+  dpp::snowflake latest_streaming_message_id{};
   dpp::message_map streaming_messages;
   do {
     try {
       constexpr uint64_t kMaxMessagesPerCall = 100;
-      streaming_messages = bot_->messages_get_sync(Settings::Get().GetChannelId(Settings::Channels::kStreams), {}, {}, {}, kMaxMessagesPerCall);
+      streaming_messages = bot_->messages_get_sync(Settings::Get().GetChannelId(Settings::Channels::kStreams), {}, {}, latest_streaming_message_id, kMaxMessagesPerCall);
     } catch (dpp::rest_exception const& rest_exception) {
       logger_.Error("Failed to get streaming messages while clearing streaming status. Exception '{}'", rest_exception.what());
       return;
     }
 
     for (auto const& streaming_message : streaming_messages) {
-      if (!earliest_streaming_message_id || (streaming_message.first < earliest_streaming_message_id)) {
-        earliest_streaming_message_id = streaming_message.first;
+      if (streaming_message.first > latest_streaming_message_id) {
+        latest_streaming_message_id = streaming_message.first;
       }
 
       bot_->message_delete(streaming_message.first, Settings::Get().GetChannelId(Settings::Channels::kStreams));
