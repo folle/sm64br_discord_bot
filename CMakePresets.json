@@ -74,6 +74,32 @@
       }
     },
     {
+      "name": "linux-x64-debug",
+      "displayName": "Linux x64 Debug",
+      "description": "Target Linux (64-bit) with the gcc/g++ development environment. (Debug)",
+      "inherits": "linux-base",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "linux-x64-release",
+      "displayName": "Linux x64 Release",
+      "description": "Target Linux (64-bit) with the gcc/g++ development environment. (Release)",
+      "inherits": "linux-base",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
       "name": "linux-aarch64-debug",
       "displayName": "Linux AArch64 Debug",
       "description": "Target Linux (AArch64) with the gcc/g++ development environment. (Debug)",
