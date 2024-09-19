@@ -184,6 +184,18 @@
       "configurePreset": "windows-x64-release"
     },
     {
+      "name": "linux-x64-debug",
+      "displayName": "Linux x64-Debug",
+      "description": "Debug build for Linux x64",
+      "configurePreset": "linux-x64-debug"
+    },
+    {
+      "name": "linux-x64-release",
+      "displayName": "Linux x64-Release",
+      "description": "Release build for Linux x64",
+      "configurePreset": "linux-x64-release"
+    },
+    {
       "name": "linux-aarch64-debug",
       "displayName": "Linux AArch64-Debug",
       "description": "Debug build for Linux AArch64",
