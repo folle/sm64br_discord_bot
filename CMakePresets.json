@@ -68,9 +68,6 @@
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Linux"
-      },
-      "environment": {
-        "VCPKG_FORCE_SYSTEM_BINARIES": "1"
       }
     },
     {
@@ -110,6 +107,9 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "environment": {
+        "VCPKG_FORCE_SYSTEM_BINARIES": "1"
       }
     },
     {
@@ -123,6 +123,9 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
+      },
+      "environment": {
+        "VCPKG_FORCE_SYSTEM_BINARIES": "1"
       }
     },
     {
