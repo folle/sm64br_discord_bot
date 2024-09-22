@@ -8,7 +8,7 @@
 
 namespace{
   std::string RemoveCommandHeader(std::string const& message) {
-    constexpr std::size_t kCommandLength = 3;
+    constexpr auto kCommandLength = 3ULL;
     return message.substr(kCommandLength, message.size() - kCommandLength);
   }
 }
@@ -30,22 +30,22 @@ void MessageHandler::Process(dpp::message const& message) noexcept {
 
   auto const from_moderator = std::any_of(member.get_roles().begin(),
                                           member.get_roles().end(),
-                                          [this](auto const& role) { return (role == Settings::Get().GetRoleId(Settings::Roles::kModerator)); });
+                                          [this](auto const& role) { return Settings::Get().GetRoleId(Settings::Roles::kModerator) == role; });
   auto const from_bot = message.author.is_bot();
 
-  auto const is_announcement_message = !message.content.rfind("!a ", 0);
+  auto const is_announcement_message = 0 == message.content.rfind("!a ", 0);
   if (is_announcement_message && from_moderator && !from_bot) {
     ProcessAnnouncementMessage(message.channel_id, message.content);
     return;
   }
 
-  auto const is_general_message = !message.content.rfind("!m ", 0);
+  auto const is_general_message = 0 == message.content.rfind("!m ", 0);
   if (is_general_message && from_moderator && !from_bot) {
     ProcessGeneralMessage(message.channel_id, message.content);
     return;
   }
 
-  auto const is_streaming_message = (message.channel_id == Settings::Get().GetChannelId(Settings::Channels::kStreams));
+  auto const is_streaming_message = Settings::Get().GetChannelId(Settings::Channels::kStreams) = message.channel_id;
   if (is_streaming_message && !from_bot) {
     ProcessStreamingMessage(message.author.id, message.id, message.content);
     return;
@@ -53,16 +53,15 @@ void MessageHandler::Process(dpp::message const& message) noexcept {
 }
 
 void MessageHandler::ProcessAnnouncementMessage(dpp::snowflake const channel_id, std::string const& message) const noexcept {
-  auto const announcement_message = "@everyone " + ::RemoveCommandHeader(message);
+  auto const announcement = fmt::format("@everyone {}", ::RemoveCommandHeader(message));
+  logger_.Info("Received announcement message '{}'", announcement);
 
-  logger_.Info("Received announcement message '{}'", announcement_message);
-
-  bot_->message_create(dpp::message(channel_id, announcement_message));
+  auto const announcement_message = dpp::message(channel_id, announcement).set_allowed_mentions(false, false, true);
+  bot_->message_create(announcement_message);
 }
 
 void MessageHandler::ProcessGeneralMessage(dpp::snowflake const channel_id, std::string const& message) const noexcept {
   auto const general_message = ::RemoveCommandHeader(message);
-  
   logger_.Info("Received general message '{}'", general_message);
 
   bot_->message_create(dpp::message(channel_id, general_message));

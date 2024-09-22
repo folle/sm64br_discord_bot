@@ -28,7 +28,6 @@ private:
   void OnGuildMemberAdd(dpp::guild_member_add_t const& guild_member_add) const noexcept;
   void OnGuildMemberRemove(dpp::guild_member_remove_t const& guild_member_remove) const noexcept;
 
-  void ClearStreamingStatus() const noexcept;
   void ClearStreamingRoles() const noexcept;
   void ClearStreamingMessages() const noexcept;
 
