@@ -45,7 +45,7 @@ void MessageHandler::Process(dpp::message const& message) noexcept {
     return;
   }
 
-  auto const is_streaming_message = Settings::Get().GetChannelId(Settings::Channels::kStreams) = message.channel_id;
+  auto const is_streaming_message = Settings::Get().GetChannelId(Settings::Channels::kStreams) == message.channel_id;
   if (is_streaming_message && !from_bot) {
     ProcessStreamingMessage(message.author.id, message.id, message.content);
     return;
