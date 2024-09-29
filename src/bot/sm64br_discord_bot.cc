@@ -27,18 +27,33 @@ void Sm64brDiscordBot::Start() const noexcept {
   bot_->start(dpp::st_wait);
 }
 
-void Sm64brDiscordBot::OnLog(dpp::log_t const& event) const noexcept {
-  switch (event.severity) {
+void Sm64brDiscordBot::OnLog(dpp::log_t const& log) const noexcept {
+  switch (log.severity) {
+    case dpp::ll_trace: {
+      logger_.Trace("{}", log.message);
+      break;
+    }
+    case dpp::ll_debug: {
+      logger_.Debug("{}", log.message);
+      break;
+    }
     case dpp::ll_info: {
-      logger_.Info("{}", event.message);
+      logger_.Info("{}", log.message);
       break;
     }
     case dpp::ll_warning: {
-      logger_.Warn("{}", event.message);
+      logger_.Warn("{}", log.message);
       break;
     }
+    case dpp::ll_error: {
+      logger_.Error("{}", log.message);
+      break;
+    }
+    case dpp::ll_critical: {
+      [[fallthrough]];
+    }
     default: {
-      logger_.Error("{}", event.message);
+      logger_.Critical("{}", log.message);
       break;
     }
   }

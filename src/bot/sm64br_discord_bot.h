@@ -21,7 +21,7 @@ public:
   void Start() const noexcept;
 
 private:
-  void OnLog(dpp::log_t const& event) const noexcept;
+  void OnLog(dpp::log_t const& log) const noexcept;
   void OnMessageCreate(dpp::message_create_t const& message_create) noexcept;
   void OnPresenceUpdate(dpp::presence_update_t const& presence_update) noexcept;
   void OnReady(dpp::ready_t const& ready) const noexcept;
