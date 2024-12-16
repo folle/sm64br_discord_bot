@@ -159,7 +159,7 @@ void Sm64brDiscordBot::ClearStreamingRoles() const noexcept {
 }
 
 void Sm64brDiscordBot::ClearStreamingMessages() const noexcept {
-  dpp::snowflake highest_streaming_message_id{};
+  dpp::snowflake highest_streaming_message_id = 1ULL;
   dpp::message_map streaming_messages;
   do {
     auto constexpr kMaxMessagesPerCall = 100ULL;
