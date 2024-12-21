@@ -46,36 +46,22 @@ target_include_directories(${PROJECT_NAME} PRIVATE
                            src/bot)
 
 
-find_package(Boost REQUIRED random)                                                 # websocketpp dependency
 find_package(dpp CONFIG REQUIRED)                                                   # Interfacing with Discord
 find_package(fmt CONFIG REQUIRED)                                                   # Format logging
 find_package(nlohmann_json CONFIG REQUIRED)                                         # Settings storage, therun.gg parsing
-find_package(Opus CONFIG REQUIRED)                                                  # DPP dependency
 find_package(OpenSSL REQUIRED)                                                      # DPP dependency
 find_package(sentry CONFIG REQUIRED)                                                # Sentry stats
 find_package(spdlog CONFIG REQUIRED)                                                # Logging
 find_package(websocketpp CONFIG REQUIRED)                                           # therun.gg integration
-find_package(ZLIB REQUIRED)                                                         # DPP dependency
-
-if(UNIX)
-find_package(unofficial-sodium CONFIG REQUIRED)                                     # DPP dependency
-endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-                      Boost::boost Boost::random
                       dpp::dpp
                       fmt::fmt-header-only
                       nlohmann_json::nlohmann_json
                       OpenSSL::SSL
-                      Opus::opus
                       sentry::sentry
                       spdlog::spdlog_header_only
-                      websocketpp::websocketpp
-                      ZLIB::ZLIB)
-
-if(UNIX)
-target_link_libraries(${PROJECT_NAME} PRIVATE unofficial-sodium::sodium)
-endif()
+                      websocketpp::websocketpp)
 
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
