@@ -1,28 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "dependencies": [
-    "boost-random",
     "dpp",
     "fmt",
     "nlohmann-json",
-    {
-      "name": "libsodium",
-      "platform": "linux"
-    },
-    {
-      "name": "opus",
-      "platform": "linux"
-    },
-    {
-      "name": "openssl",
-      "platform": "linux"
-    },
+    "openssl",
     "sentry-native",
     "spdlog",
-    "websocketpp",
-    {
-      "name": "zlib",
-      "platform": "linux"
-    }
+    "websocketpp"
   ]
 }
