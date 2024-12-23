@@ -18,6 +18,7 @@ public:
   void ProcessAnnouncementMessage(dpp::snowflake channel_id, std::string const& message) const noexcept;
   void ProcessGeneralMessage(dpp::snowflake channel_id, std::string const& message) const noexcept;
   void ProcessStreamingMessage(dpp::snowflake user_id, dpp::snowflake message_id, std::string const& message) noexcept;
+  void ProcessAwardsMessage(dpp::snowflake user_id, dpp::snowflake message_id, std::string const& message) noexcept;
 
 private:
   Logger const logger_ = LoggerFactory::Get().Create("Message Handler");

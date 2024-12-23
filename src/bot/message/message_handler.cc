@@ -4,6 +4,8 @@
 #include <regex>
 #include <utility>
 
+#include <boost/algorithm/string.hpp>
+
 #include "settings/settings.h"
 
 namespace{
@@ -50,6 +52,13 @@ void MessageHandler::Process(dpp::message const& message) noexcept {
     ProcessStreamingMessage(message.author.id, message.id, message.content);
     return;
   }
+  
+  auto const is_clip_message = Settings::Get().GetChannelId(Settings::Channels::kClips) == message.channel_id;
+  auto const is_ooc_message = Settings::Get().GetChannelId(Settings::Channels::kOoc) == message.channel_id;
+  if ((is_clip_message ||  is_ooc_message) && !from_bot) {
+    ProcessAwardsMessage(message.author.id, message.id, message.content);
+    return;
+  }
 }
 
 void MessageHandler::ProcessAnnouncementMessage(dpp::snowflake const channel_id, std::string const& message) const noexcept {
@@ -83,4 +92,22 @@ void MessageHandler::ProcessStreamingMessage(dpp::snowflake const user_id, dpp::
   bot_->message_delete(message_id, Settings::Get().GetChannelId(Settings::Channels::kStreams));
 
   logger_.Info("Deleted streaming message with id '{}'", message_id);
+}
+
+void MessageHandler::ProcessAwardsMessage(dpp::snowflake const user_id, dpp::snowflake const message_id, std::string const& message) noexcept {
+
+
+boost::algorithm::split(strVec,str,is_any_of("\t "),boost::token_compress_on); 
+  melhor pop-off
+  melhor meme da comunidade
+  momento mais engraçado
+  momento mais insano,
+  melhor rage
+  melhor clutch
+  momento skill issue
+
+  estrela em ascensão
+  pb mais merecido
+  streamer do ano
+  jogador do ano
 }

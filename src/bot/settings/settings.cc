@@ -18,8 +18,12 @@ namespace {
       return Settings::Channels::kStreams;
     }
 
-    if (channel == "pb_submission") {
-      return Settings::Channels::kPbSubmission;
+    if (channel == "clips") {
+      return Settings::Channels::kClips;
+    }
+
+    if (channel == "ooc") {
+      return Settings::Channels::kOoc;
     }
 
     return Settings::Channels::kNone;
@@ -39,6 +43,14 @@ namespace {
     }
 
     return Settings::Roles::kNone;
+  }
+
+  Settings::Users UserStringToEnum(std::string const& user) noexcept {
+    if (user == "petalite") {
+      return Settings::Users::kPetalite;
+    }
+
+    return Settings::Users::kNone;
   }
 
   Settings::Categories CategoryStringToEnum(std::string const& category) noexcept {
@@ -81,17 +93,23 @@ Settings::Settings() {
   auto const& server_data = settings_json["server"];
   guild_id_ = server_data["guild"].get<dpp::snowflake>();
 
+  auto const& channels_json = server_data["channels"];
+  for (auto it_channel = channels_json.begin(); it_channel != channels_json.end(); ++it_channel) {
+    channels_ids_[::ServerChannelStringToEnum(it_channel.key())] = it_channel.value().get<dpp::snowflake>();
+  }
+  channels_ids_[Channels::kNone] = dpp::snowflake{};
+
   auto const& roles_json = server_data["roles"];
   for (auto it_role = roles_json.begin(); it_role != roles_json.end(); ++it_role) {
     roles_ids_[::ServerRoleStringToEnum(it_role.key())] = it_role.value().get<dpp::snowflake>();
   }
   roles_ids_[Roles::kNone] = dpp::snowflake{};
 
-  auto const& channels_json = server_data["channels"];
-  for (auto it_channel = channels_json.begin(); it_channel != channels_json.end(); ++it_channel) {
-    channels_ids_[::ServerChannelStringToEnum(it_channel.key())] = it_channel.value().get<dpp::snowflake>();
+  auto const& users_json = server_data["users"];
+  for (auto it_user = users_json.begin(); it_user != users_json.end(); ++it_user) {
+    users_ids_[::UserStringToEnum(it_user.key())] = it_user.value().get<dpp::snowflake>();
   }
-  channels_ids_[Channels::kNone] = dpp::snowflake{};
+  users_ids_[Users::kNone] = dpp::snowflake{};
 
   auto const& the_run_data = settings_json["the_run"];
   the_run_endpoint_ = the_run_data["endpoint"].get<std::string>();
@@ -119,12 +137,16 @@ dpp::snowflake Settings::GetGuildId() const noexcept {
   return guild_id_;
 }
 
+dpp::snowflake Settings::GetChannelId(Channels const channel) const noexcept  {
+  return channels_ids_.at(channel);
+}
+
 dpp::snowflake Settings::GetRoleId(Roles const role) const noexcept {
   return roles_ids_.at(role);
 }
 
-dpp::snowflake Settings::GetChannelId(Channels const channel) const noexcept  {
-  return channels_ids_.at(channel);
+dpp::snowflake Settings::GetUserId(Users const user) const noexcept {
+  return users_ids_.at(user);
 }
 
 std::string const& Settings::GetTheRunEndpoint() const noexcept {
