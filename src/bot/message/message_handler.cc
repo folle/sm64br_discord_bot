@@ -96,18 +96,18 @@ void MessageHandler::ProcessStreamingMessage(dpp::snowflake const user_id, dpp::
 
 void MessageHandler::ProcessAwardsMessage(dpp::snowflake const user_id, dpp::snowflake const message_id, std::string const& message) noexcept {
 
-
-boost::algorithm::split(strVec,str,is_any_of("\t "),boost::token_compress_on); 
-  melhor pop-off
-  melhor meme da comunidade
-  momento mais engraçado
-  momento mais insano,
-  melhor rage
-  melhor clutch
-  momento skill issue
-
-  estrela em ascensão
-  pb mais merecido
-  streamer do ano
-  jogador do ano
+//
+//boost::algorithm::split(strVec,str,is_any_of("\t "),boost::token_compress_on); 
+//  melhor pop-off
+//  melhor meme da comunidade
+//  momento mais engraçado
+//  momento mais insano,
+//  melhor rage
+//  melhor clutch
+//  momento skill issue
+//
+//  estrela em ascensão
+//  pb mais merecido
+//  streamer do ano
+//  jogador do ano
 }

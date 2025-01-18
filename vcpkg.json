@@ -6,7 +6,6 @@
     "fmt",
     "nlohmann-json",
     "openssl",
-    "sentry-native",
     "spdlog",
     "websocketpp"
   ]

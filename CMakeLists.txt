@@ -36,9 +36,7 @@ add_executable(${PROJECT_NAME}
                src/logger/logger.cc
                src/logger/logger.h
                src/logger/logger_factory.cc
-               src/logger/logger_factory.h
-               src/sentry/sentry.cc
-               src/sentry/sentry.h)
+               src/logger/logger_factory.h)
 
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -51,7 +49,6 @@ find_package(dpp CONFIG REQUIRED)                                               
 find_package(fmt CONFIG REQUIRED)                                                   # Format logging
 find_package(nlohmann_json CONFIG REQUIRED)                                         # Settings storage, therun.gg parsing
 find_package(OpenSSL REQUIRED)                                                      # DPP dependency
-find_package(sentry CONFIG REQUIRED)                                                # Sentry stats
 find_package(spdlog CONFIG REQUIRED)                                                # Logging
 find_package(websocketpp CONFIG REQUIRED)                                           # therun.gg integration
 
@@ -61,7 +58,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
                       fmt::fmt-header-only
                       nlohmann_json::nlohmann_json
                       OpenSSL::Crypto
-                      sentry::sentry
                       spdlog::spdlog_header_only
                       websocketpp::websocketpp)
 
