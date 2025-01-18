@@ -80,7 +80,6 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
     auto const is_streaming_sm64 = activies.cend() != streaming_activity;
 
     auto const& streaming_user_id = presence_update.rich_presence.user_id;
-    auto const streaming_user_mention = dpp::user::get_mention(streaming_user_id);
 
     std::scoped_lock<std::mutex> const mutex_lock(on_presence_update_mutex_);
 
@@ -88,11 +87,11 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
     auto const streaming_message_sent_ = (streaming_users_ids_and_messages_ids_.cend() != it_user_id_and_message_id);
     if (is_streaming_sm64) {
       if (!streaming_message_sent_) {
-        logger_.Info("User '{}' started streaming Super Mario 64", streaming_user_mention);
+        logger_.Info("User '{}' started streaming Super Mario 64", streaming_user_id);
 
         auto const streaming_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kStreams),
                                                     fmt::format("{} **{}**\n{}", 
-                                                                streaming_user_mention,
+                                                                dpp::user::get_mention(streaming_user_id),
                                                                 streaming_activity->details,
                                                                 streaming_activity->url));
         dpp::snowflake streaming_message_id{};
@@ -101,7 +100,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
         }
         catch (dpp::rest_exception const& rest_exception) {
           logger_.Error("Failed to create streaming message for user '{}' while processing presence update. Exception '{}'",
-                        streaming_user_mention, rest_exception.what());
+                        streaming_user_id, rest_exception.what());
           return;
         }
 
@@ -111,7 +110,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
       }
     } else {
       if (streaming_message_sent_) {
-        logger_.Info("User '{}' finished streaming Super Mario 64", streaming_user_mention);
+        logger_.Info("User '{}' finished streaming Super Mario 64", streaming_user_id);
 
         bot_->message_delete(it_user_id_and_message_id->second, Settings::Get().GetChannelId(Settings::Channels::kStreams));
         bot_->guild_member_remove_role(Settings::Get().GetGuildId(), streaming_user_id, Settings::Get().GetRoleId(Settings::Roles::kStreaming));
