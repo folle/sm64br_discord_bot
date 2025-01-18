@@ -60,7 +60,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
                       dpp::dpp
                       fmt::fmt-header-only
                       nlohmann_json::nlohmann_json
-                      OpenSSL::SSL
+                      OpenSSL::Crypto
                       sentry::sentry
                       spdlog::spdlog_header_only
                       websocketpp::websocketpp)
