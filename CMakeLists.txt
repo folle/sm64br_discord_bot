@@ -29,10 +29,10 @@ add_executable(${PROJECT_NAME}
                src/bot/settings/settings.h
                src/bot/message/message_handler.cc
                src/bot/message/message_handler.h
-               src/bot/the_run/payload_parser.cc
-               src/bot/the_run/payload_parser.h
-               src/bot/the_run/the_run.cc
-               src/bot/the_run/the_run.h
+               #src/bot/the_run/payload_parser.cc
+               #src/bot/the_run/payload_parser.h
+               #src/bot/the_run/the_run.cc
+               #src/bot/the_run/the_run.h
                src/logger/logger.cc
                src/logger/logger.h
                src/logger/logger_factory.cc
@@ -50,7 +50,7 @@ find_package(fmt CONFIG REQUIRED)                                               
 find_package(nlohmann_json CONFIG REQUIRED)                                         # Settings storage, therun.gg parsing
 find_package(OpenSSL REQUIRED)                                                      # DPP dependency
 find_package(spdlog CONFIG REQUIRED)                                                # Logging
-find_package(websocketpp CONFIG REQUIRED)                                           # therun.gg integration
+#find_package(websocketpp CONFIG REQUIRED)                                           # therun.gg integration
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
                       Boost::algorithm
@@ -58,8 +58,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
                       fmt::fmt-header-only
                       nlohmann_json::nlohmann_json
                       OpenSSL::Crypto
-                      spdlog::spdlog_header_only
-                      websocketpp::websocketpp)
+                      spdlog::spdlog_header_only)
+                      #websocketpp::websocketpp)
 
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

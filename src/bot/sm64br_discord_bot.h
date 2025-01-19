@@ -11,7 +11,7 @@
 #include "logger/logger_factory.h"
 #include "message/message_handler.h"
 #include "settings/settings.h"
-#include "the_run/the_run.h"
+//#include "the_run/the_run.h"
 
 class Sm64brDiscordBot final {
 public:
@@ -38,7 +38,7 @@ private:
   
   MessageHandler message_handler_ = MessageHandler(bot_);
 
-  TheRun the_run = TheRun(bot_);
+  //TheRun the_run = TheRun(bot_);
 
   std::map<dpp::snowflake, dpp::snowflake> streaming_users_ids_and_messages_ids_;
   std::mutex on_presence_update_mutex_;
