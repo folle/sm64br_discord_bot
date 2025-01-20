@@ -105,7 +105,7 @@ Settings::Settings() {
   }
   roles_ids_[Roles::kNone] = dpp::snowflake{};
 
-  auto const& users_json = server_data["users"];
+  auto const& users_json = settings_json["users"];
   for (auto it_user = users_json.begin(); it_user != users_json.end(); ++it_user) {
     users_ids_[::UserStringToEnum(it_user.key())] = it_user.value().get<dpp::snowflake>();
   }
