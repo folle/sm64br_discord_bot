@@ -12,8 +12,7 @@ public:
     kGeneral,
     kUpdates,
     kStreams,
-    kClips,
-    kOoc
+    kClips
   };
 
   enum class Roles {

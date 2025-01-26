@@ -22,10 +22,6 @@ namespace {
       return Settings::Channels::kClips;
     }
 
-    if (channel == "ooc") {
-      return Settings::Channels::kOoc;
-    }
-
     return Settings::Channels::kNone;
   }
 

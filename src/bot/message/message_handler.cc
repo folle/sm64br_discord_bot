@@ -10,7 +10,7 @@
 
 namespace{
   std::string RemoveCommandHeader(std::string const& message) {
-    constexpr auto kCommandLength = 3ULL;
+    auto constexpr kCommandLength = 3ULL;
     return message.substr(kCommandLength, message.size() - kCommandLength);
   }
 }
@@ -54,8 +54,7 @@ void MessageHandler::Process(dpp::message const& message) noexcept {
   }
   
   auto const is_clip_message = Settings::Get().GetChannelId(Settings::Channels::kClips) == message.channel_id;
-  auto const is_ooc_message = Settings::Get().GetChannelId(Settings::Channels::kOoc) == message.channel_id;
-  if ((is_clip_message ||  is_ooc_message) && !from_bot) {
+  if (is_clip_message && !from_bot) {
     ProcessAwardsMessage(message.author.id, message.id, message.content);
     return;
   }
@@ -81,7 +80,7 @@ void MessageHandler::ProcessStreamingMessage(dpp::snowflake const user_id, dpp::
 
   auto const kUrlRegex = std::regex("((http|https)://)(www.)?[a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)");
   if (std::regex_search(message, kUrlRegex)) {
-    constexpr auto kStreamingMessageDeleteDelay = std::chrono::hours(6);
+    auto constexpr kStreamingMessageDeleteDelay = std::chrono::hours(6);
     std::this_thread::sleep_for(kStreamingMessageDeleteDelay);
   }
   else {
