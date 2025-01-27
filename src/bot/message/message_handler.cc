@@ -28,8 +28,7 @@ void MessageHandler::Process(dpp::message const& message) noexcept {
   dpp::guild_member member;
   try {
     member = bot_->guild_get_member_sync(message.guild_id, message.author.id);
-  }
-  catch (dpp::rest_exception const& rest_exception) {
+  } catch (dpp::rest_exception const& rest_exception) {
     logger_.Error("Failed to get member while processing message create. Exception '{}'", rest_exception.what());
     return;
   }
@@ -124,8 +123,7 @@ void MessageHandler::SendNominationMessage(dpp::snowflake const user_id, std::st
         logger_.Error("Failed to add awards reaction '{}' in nomination message '{}' to user '{}'", it->first, sent_message.id, user_id);
       }
     }
-  }
-  catch (dpp::exception const& rest_exception) {
+  } catch (dpp::exception const& rest_exception) {
     logger_.Error("Failed to send nomination message '{}' to user '{}'. Exception: '{}'", nomination_content, user_id, rest_exception.what());
   }
 }

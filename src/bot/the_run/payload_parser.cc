@@ -66,7 +66,7 @@ PayloadParser::PayloadParser(std::string const& payload) noexcept {
 }
 
 void PayloadParser::Parse(std::string const& payload) noexcept {
- try {
+  try {
     auto const payload_json = nlohmann::json::parse(payload);
 
     user_ = payload_json["user"].get<std::string>();
@@ -80,8 +80,7 @@ void PayloadParser::Parse(std::string const& payload) noexcept {
     if (!ParseSplitsData(splits_data)) {
       return;
     }
-  }
-  catch (std::exception const& exception) {
+  } catch (std::exception const& exception) {
     logger_.Error("Failed to parse The Run payload '{}'. Error '{}'", payload, exception.what());
     return;
   }

@@ -7,8 +7,7 @@ int main(const int argc, char const *const *const argv) {
   try {
     Sm64brDiscordBot bot;
     bot.Start();
-  }
-  catch (std::exception const& exception) {
+  } catch (std::exception const& exception) {
     std::cerr << exception.what();
     return -1;
   }

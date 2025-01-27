@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include <fmt/format.h>
+#include <nlohmann/json.hpp>
 
 Sm64brDiscordBot::Sm64brDiscordBot() {
   bot_->on_log([this](dpp::log_t const& event) { OnLog(event); });
@@ -75,13 +76,26 @@ void Sm64brDiscordBot::OnMessageReactionAdd(dpp::message_reaction_add_t const& m
     return;
   }
 
-  message_reaction_futures_.push_back(std::async(std::launch::async, [this, message_id = message_reaction_add.message_id, channel_id = message_reaction_add.channel_id]() {
+  auto const& message_id = message_reaction_add.message_id;
+  auto const& channel_id = message_reaction_add.channel_id;
+
+  try {
+    auto const raw_event_json = nlohmann::json::parse(message_reaction_add.raw_event);
+    if (dpp::snowflake(raw_event_json["d"]["user_id"].get<std::string>()) == bot_->me.id) {
+      return;
+    }
+  } catch (nlohmann::json::exception const& json_exception) {
+    logger_.Error("Failed to get user id from nomination message '{}' in channel '{}'. Exception: '{}'", message_id, channel_id, json_exception.what());
+    return;
+  }
+
+  
+  message_reaction_futures_.push_back(std::async(std::launch::async, [this, message_id, channel_id]() {
     dpp::message nomination_message;
     try {
       nomination_message = bot_->message_get_sync(message_id, channel_id);
-    }
-    catch (dpp::exception const& rest_exception) {
-      logger_.Error("Failed to get nomination message '{}' from channel '{}'. Exception: '{}'", message_id, channel_id, rest_exception.what());
+    } catch (dpp::exception const& rest_exception) {
+      logger_.Error("Failed to get nomination message '{}' in channel '{}'. Exception: '{}'", message_id, channel_id, rest_exception.what());
       return;
     }
 
@@ -145,8 +159,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
         dpp::snowflake streaming_message_id{};
         try {
           streaming_message_id = bot_->message_create_sync(streaming_message).id;
-        }
-        catch (dpp::rest_exception const& rest_exception) {
+        } catch (dpp::rest_exception const& rest_exception) {
           logger_.Error("Failed to create streaming message for user '{}' while processing presence update. Exception '{}'",
                         streaming_user_id, rest_exception.what());
           return;

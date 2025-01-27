@@ -34,8 +34,7 @@ std::shared_ptr<boost::asio::ssl::context> TheRun::OnTlsInit() noexcept {
   auto const ssl_context = std::make_shared<boost::asio::ssl::context>(boost::asio::ssl::context::sslv23);
   try {
     ssl_context->set_options(boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 | boost::asio::ssl::context::no_sslv3 | boost::asio::ssl::context::single_dh_use);
-  }
-  catch (std::exception const& exception) {
+  } catch (std::exception const& exception) {
     logger_.Error("Failed to set The Run SSL context. Error '{}'", exception.what());
   }
 
