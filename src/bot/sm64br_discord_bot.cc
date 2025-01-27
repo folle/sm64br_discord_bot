@@ -88,7 +88,6 @@ void Sm64brDiscordBot::OnMessageReactionAdd(dpp::message_reaction_add_t const& m
     logger_.Error("Failed to get user id from nomination message '{}' in channel '{}'. Exception: '{}'", message_id, channel_id, json_exception.what());
     return;
   }
-
   
   message_reaction_futures_.push_back(std::async(std::launch::async, [this, message_id, channel_id]() {
     dpp::message nomination_message;
