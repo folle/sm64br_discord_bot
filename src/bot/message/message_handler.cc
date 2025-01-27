@@ -1,23 +1,27 @@
 #include "message_handler.h"
 
 #include <algorithm>
-#include <regex>
 #include <utility>
 
-#include <boost/algorithm/string.hpp>
+#include <fmt/format.h>
 
 #include "settings/settings.h"
 
 namespace{
-  std::string RemoveCommandHeader(std::string const& message) {
+  std::string RemoveCommandHeader(std::string const& content) {
     auto constexpr kCommandLength = 3ULL;
-    return message.substr(kCommandLength, message.size() - kCommandLength);
+    return content.substr(kCommandLength, content.size() - kCommandLength);
   }
 }
 
 MessageHandler::MessageHandler(std::shared_ptr<dpp::cluster> bot) noexcept :
   bot_(std::move(bot)) {
-    
+  nomination_content_header_ = std::string("Você gostaria de indicar esse vídeo para o Super Mario 64 Brasil Awards? Se sim, reaja de acordo com a categoria desejada (apenas uma reação por vídeo):\n");
+
+  auto const awards_reactions_and_categories = Settings::Get().GetAwardsReactionsAndCategories();
+  for (auto it = awards_reactions_and_categories.begin(); it != awards_reactions_and_categories.end(); ++it) {
+    nomination_content_header_.append(fmt::format("{} - {}\n", it->first, it->second));
+  }
 }
 
 void MessageHandler::Process(dpp::message const& message) noexcept {
@@ -55,31 +59,30 @@ void MessageHandler::Process(dpp::message const& message) noexcept {
   
   auto const is_clip_message = Settings::Get().GetChannelId(Settings::Channels::kClips) == message.channel_id;
   if (is_clip_message && !from_bot) {
-    ProcessAwardsMessage(message.author.id, message.id, message.content);
+    ProcessAwardsMessage(message.author.id, message.id, message.content, message.attachments);
     return;
   }
 }
 
-void MessageHandler::ProcessAnnouncementMessage(dpp::snowflake const channel_id, std::string const& message) const noexcept {
-  auto const announcement = fmt::format("@everyone {}", ::RemoveCommandHeader(message));
+void MessageHandler::ProcessAnnouncementMessage(dpp::snowflake const channel_id, std::string const& content) const noexcept {
+  auto const announcement = fmt::format("@everyone {}", ::RemoveCommandHeader(content));
   logger_.Info("Received announcement message '{}'", announcement);
 
   auto const announcement_message = dpp::message(channel_id, announcement).set_allowed_mentions(false, false, true);
   bot_->message_create(announcement_message);
 }
 
-void MessageHandler::ProcessGeneralMessage(dpp::snowflake const channel_id, std::string const& message) const noexcept {
-  auto const general_message = ::RemoveCommandHeader(message);
-  logger_.Info("Received general message '{}'", general_message);
+void MessageHandler::ProcessGeneralMessage(dpp::snowflake const channel_id, std::string const& content) const noexcept {
+  auto const general_announcement = ::RemoveCommandHeader(content);
+  logger_.Info("Received general message '{}'", general_announcement);
 
-  bot_->message_create(dpp::message(channel_id, general_message));
+  bot_->message_create(dpp::message(channel_id, general_announcement));
 }
 
-void MessageHandler::ProcessStreamingMessage(dpp::snowflake const user_id, dpp::snowflake const message_id, std::string const& message) noexcept {
+void MessageHandler::ProcessStreamingMessage(dpp::snowflake const user_id, dpp::snowflake const message_id, std::string const& content) noexcept {
   logger_.Info("Received streaming message with id '{}'", message_id);
 
-  auto const kUrlRegex = std::regex("((http|https)://)(www.)?[a-zA-Z0-9@:%._\\+~#?&//=]{2,256}\\.[a-z]{2,6}\\b([-a-zA-Z0-9@:%._\\+~#?&//=]*)");
-  if (std::regex_search(message, kUrlRegex)) {
+  if (std::regex_search(content, url_regex_)) {
     auto constexpr kStreamingMessageDeleteDelay = std::chrono::hours(6);
     std::this_thread::sleep_for(kStreamingMessageDeleteDelay);
   }
@@ -93,20 +96,36 @@ void MessageHandler::ProcessStreamingMessage(dpp::snowflake const user_id, dpp::
   logger_.Info("Deleted streaming message with id '{}'", message_id);
 }
 
-void MessageHandler::ProcessAwardsMessage(dpp::snowflake const user_id, dpp::snowflake const message_id, std::string const& message) noexcept {
+void MessageHandler::ProcessAwardsMessage(dpp::snowflake const user_id, dpp::snowflake const message_id, std::string const& content, std::vector<dpp::attachment> const& attachments) noexcept {
+  for (auto it = std::sregex_iterator(content.begin(), content.end(), url_regex_); it != std::sregex_iterator(); ++it) {
+    SendNominationMessage(user_id, it->str());
+  }
 
-//
-//boost::algorithm::split(strVec,str,is_any_of("\t "),boost::token_compress_on); 
-//  melhor pop-off
-//  melhor meme da comunidade
-//  momento mais engraçado
-//  momento mais insano,
-//  melhor rage
-//  melhor clutch
-//  momento skill issue
-//
-//  estrela em ascensão
-//  pb mais merecido
-//  streamer do ano
-//  jogador do ano
+  for (auto const attachment : attachments) {
+    if (attachment.content_type.rfind("video/", 0) != 0) {
+      continue;
+    }
+
+    SendNominationMessage(user_id, attachment.url);
+  }
+}
+
+void MessageHandler::SendNominationMessage(dpp::snowflake const user_id, std::string const& clip_url) noexcept {
+  auto nomination_content = nomination_content_header_;
+  nomination_content.append(clip_url);
+
+  try {
+    auto const sent_message = bot_->direct_message_create_sync(user_id, dpp::message(nomination_content));
+
+    auto const awards_reactions_and_categories = Settings::Get().GetAwardsReactionsAndCategories();
+    for (auto it = awards_reactions_and_categories.begin(); it != awards_reactions_and_categories.end(); ++it) {
+      auto const add_reaction_confirmation = bot_->message_add_reaction_sync(sent_message, it->first);
+      if (!add_reaction_confirmation.success) {
+        logger_.Error("Failed to add awards reaction '{}' in nomination message '{}' to user '{}'", it->first, sent_message.id, user_id);
+      }
+    }
+  }
+  catch (dpp::exception const& rest_exception) {
+    logger_.Error("Failed to send nomination message '{}' to user '{}'. Exception: '{}'", nomination_content, user_id, rest_exception.what());
+  }
 }

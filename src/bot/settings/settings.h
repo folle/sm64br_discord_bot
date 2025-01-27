@@ -49,6 +49,7 @@ public:
   dpp::snowflake GetChannelId(Channels const channel) const noexcept;
   dpp::snowflake GetRoleId(Roles const role) const noexcept;
   dpp::snowflake GetUserId(Users const user) const noexcept;
+  std::map<std::string, std::string> const& GetAwardsReactionsAndCategories() const noexcept;
 
   std::string const& GetTheRunEndpoint() const noexcept;
   TheRunThresholds const& GetTheRunThresholds(Categories const category) const noexcept;
@@ -67,6 +68,7 @@ private:
   std::map<Channels, dpp::snowflake> channels_ids_;
   std::map<Roles, dpp::snowflake> roles_ids_;
   std::map<Users, dpp::snowflake> users_ids_;
+  std::map<std::string, std::string> awards_reactions_and_categories_;
 
   std::string the_run_endpoint_;
   std::map<Categories, TheRunThresholds> the_run_thresholds_;

@@ -23,6 +23,7 @@ public:
 private:
   void OnLog(dpp::log_t const& log) const noexcept;
   void OnMessageCreate(dpp::message_create_t const& message_create) noexcept;
+  void OnMessageReactionAdd(dpp::message_reaction_add_t const& message_reaction_add) noexcept;
   void OnPresenceUpdate(dpp::presence_update_t const& presence_update) noexcept;
   void OnReady(dpp::ready_t const& ready) const noexcept;
   void OnGuildMemberAdd(dpp::guild_member_add_t const& guild_member_add) const noexcept;
@@ -44,5 +45,6 @@ private:
   std::mutex on_presence_update_mutex_;
 
   std::list<std::future<void>> message_create_futures_;
+  std::list<std::future<void>> message_reaction_futures_;
   std::list<std::future<void>> presence_update_futures_;
 };

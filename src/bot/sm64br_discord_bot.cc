@@ -8,6 +8,7 @@ Sm64brDiscordBot::Sm64brDiscordBot() {
   bot_->on_log([this](dpp::log_t const& event) { OnLog(event); });
   bot_->on_ready([this](dpp::ready_t const& ready) { OnReady(ready); });
   bot_->on_message_create([this](dpp::message_create_t const& message_create) { OnMessageCreate(message_create); });
+  bot_->on_message_reaction_add([this](dpp::message_reaction_add_t const& message_reaction_add) { OnMessageReactionAdd(message_reaction_add); });
   bot_->on_presence_update([this](dpp::presence_update_t const& presence_update) { OnPresenceUpdate(presence_update); });
   bot_->on_guild_member_add([this](dpp::guild_member_add_t const& guild_member_add) { OnGuildMemberAdd(guild_member_add); });
   bot_->on_guild_member_remove([this](dpp::guild_member_remove_t const& guild_member_remove) { OnGuildMemberRemove(guild_member_remove); });
@@ -64,6 +65,53 @@ void Sm64brDiscordBot::OnMessageCreate(dpp::message_create_t const& message_crea
 
   message_create_futures_.push_back(std::async(std::launch::async, [this, message_create]() {
     message_handler_.Process(message_create.msg);
+  }));
+}
+
+void Sm64brDiscordBot::OnMessageReactionAdd(dpp::message_reaction_add_t const& message_reaction_add) noexcept {
+  message_reaction_futures_.remove_if([](auto const& future) { return std::future_status::ready == future.wait_for(std::chrono::milliseconds(0)); });
+
+  if (message_reaction_add.message_author_id != bot_->me.id) {
+    return;
+  }
+
+  message_reaction_futures_.push_back(std::async(std::launch::async, [this, message_id = message_reaction_add.message_id, channel_id = message_reaction_add.channel_id]() {
+    dpp::message nomination_message;
+    try {
+      nomination_message = bot_->message_get_sync(message_id, channel_id);
+    }
+    catch (dpp::exception const& rest_exception) {
+      logger_.Error("Failed to get nomination message '{}' from channel '{}'. Exception: '{}'", message_id, channel_id, rest_exception.what());
+      return;
+    }
+
+    auto const& reactions = nomination_message.reactions;
+    auto const user_reaction = std::find_if(reactions.cbegin(), reactions.cend(), [](auto const& reaction) {
+      return reaction.count > 1;
+    });
+
+    if (user_reaction == reactions.end()) {
+      return;
+    }
+
+    auto const& content = nomination_message.content;
+
+    auto const awards_reactions_and_categories = Settings::Get().GetAwardsReactionsAndCategories();
+    if (!awards_reactions_and_categories.contains(user_reaction->emoji_name)) {
+      logger_.Error("Received an invalid awards reaction '{}' in message '{}'", user_reaction->emoji_name, content);
+      return;
+    }
+    auto const nominated_category = awards_reactions_and_categories.at(user_reaction->emoji_name);
+
+    auto const clip_url = content.substr(content.rfind('\n') + 1);
+    if (clip_url.empty()) {
+      logger_.Error("Received an invalid awards message '{}' without a video", content);
+      return;
+    }
+
+    auto const petalite_user_id = Settings::Get().GetUserId(Settings::Users::kPetalite);
+    auto const petalite_content = fmt::format("Clipe: {}\nCategoria: {}", clip_url, nominated_category);
+    bot_->direct_message_create(petalite_user_id, dpp::message(petalite_content));
   }));
 }
 

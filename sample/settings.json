@@ -19,6 +19,15 @@
       "pacepals": 1196549524907364483
     }
   },
+  "awards": {
+    "0️⃣": "Melhor Pop Off",
+    "1️⃣": "Melhor Meme",
+    "2️⃣": "Momento Mais Engraçado",
+    "3️⃣": "Momento Mais Insano",
+    "4️⃣": "Melhor Rage",
+    "5️⃣": "Melhor Clutch",
+    "6️⃣": "Momento Skill Issue"
+  },
   "the_run": {
     "endpoint": "wss://fh76djw1t9.execute-api.eu-west-1.amazonaws.com/prod",
     "thresholds": [

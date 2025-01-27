@@ -107,6 +107,11 @@ Settings::Settings() {
   }
   users_ids_[Users::kNone] = dpp::snowflake{};
 
+  auto const& awards_json = settings_json["awards"];
+  for (auto it_awards = awards_json.begin(); it_awards != awards_json.end(); ++it_awards) {
+    awards_reactions_and_categories_[it_awards.key()] = it_awards.value();
+  }
+
   auto const& the_run_data = settings_json["the_run"];
   the_run_endpoint_ = the_run_data["endpoint"].get<std::string>();
 
@@ -140,6 +145,10 @@ dpp::snowflake Settings::GetRoleId(Roles const role) const noexcept {
 
 dpp::snowflake Settings::GetUserId(Users const user) const noexcept {
   return users_ids_.at(user);
+}
+
+std::map<std::string, std::string> const& Settings::GetAwardsReactionsAndCategories() const noexcept {
+  return awards_reactions_and_categories_;
 }
 
 std::string const& Settings::GetTheRunEndpoint() const noexcept {
