@@ -49,7 +49,6 @@ find_package(fmt CONFIG REQUIRED)                                               
 find_package(nlohmann_json CONFIG REQUIRED)                                         # Settings storage, therun.gg parsing
 find_package(OpenSSL REQUIRED)                                                      # DPP dependency
 find_package(spdlog CONFIG REQUIRED)                                                # Logging
-#find_package(websocketpp CONFIG REQUIRED)                                           # therun.gg integration
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
                       dpp::dpp
@@ -57,7 +56,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
                       nlohmann_json::nlohmann_json
                       OpenSSL::Crypto
                       spdlog::spdlog_header_only)
-                      #websocketpp::websocketpp)
 
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

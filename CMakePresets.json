@@ -20,8 +20,8 @@
       "inherits": "default",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "cl",
-        "CMAKE_CXX_COMPILER": "cl"
+        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "clang-cl"
       },
       "condition": {
         "type": "equals",
@@ -61,8 +61,8 @@
       "inherits": "default",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_CXX_COMPILER": "g++"
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
       },
       "condition": {
         "type": "equals",
@@ -134,8 +134,8 @@
       "inherits": "default",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_CXX_COMPILER": "g++"
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
       },
       "condition": {
         "type": "equals",
