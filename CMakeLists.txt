@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.25.1)
 
+set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
+
+if (${CMAKE_C_COMPILER} MATCHES "clang-cl")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Qunused-arguments")
+endif()
+
+if (${CMAKE_CXX_COMPILER} MATCHES "clang-cl")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
+endif()
 
 find_package(Git QUIET)
 
@@ -16,9 +25,7 @@ if(GIT_FOUND)
   endif()
 endif()
 
-
 project(sm64br_discord_bot VERSION 1.0 DESCRIPTION "SM64BR Discord Bot")  
-
 
 # Bot project
 add_executable(${PROJECT_NAME}
@@ -38,11 +45,9 @@ add_executable(${PROJECT_NAME}
                src/logger/logger_factory.cc
                src/logger/logger_factory.h)
 
-
 target_include_directories(${PROJECT_NAME} PRIVATE
                            src
                            src/bot)
-
 
 find_package(dpp CONFIG REQUIRED)                                                   # Interfacing with Discord
 find_package(fmt CONFIG REQUIRED)                                                   # Format logging
@@ -61,7 +66,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 set_target_properties(${PROJECT_NAME} PROPERTIES
                       CXX_STANDARD 23
                       CXX_STANDARD_REQUIRED ON)
-
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/settings/settings.json")
   configure_file(sample/settings.json "${CMAKE_BINARY_DIR}/settings/settings.json" COPYONLY)
