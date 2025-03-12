@@ -81,7 +81,7 @@ void Sm64brDiscordBot::OnMessageReactionAdd(dpp::message_reaction_add_t const& m
 
   try {
     auto const raw_event_json = nlohmann::json::parse(message_reaction_add.raw_event);
-    if (dpp::snowflake(raw_event_json["d"]["user_id"].get<std::string>()) == bot_->me.id) {
+    if (message_reaction_add.reacting_user.id == bot_->me.id) {
       return;
     }
   } catch (nlohmann::json::exception const& json_exception) {
