@@ -49,6 +49,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
                            src
                            src/bot)
 
+find_package(Boost REQUIRED COMPONENTS beast)                                       # therun.gg integration
 find_package(dpp CONFIG REQUIRED)                                                   # Interfacing with Discord
 find_package(fmt CONFIG REQUIRED)                                                   # Format logging
 find_package(nlohmann_json CONFIG REQUIRED)                                         # Settings storage, therun.gg parsing
@@ -56,12 +57,12 @@ find_package(OpenSSL REQUIRED)                                                  
 find_package(spdlog CONFIG REQUIRED)                                                # Logging
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
+                      Boost::beast
                       dpp::dpp
                       fmt::fmt-header-only
                       nlohmann_json::nlohmann_json
                       OpenSSL::Crypto
                       spdlog::spdlog_header_only)
-
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
                       CXX_STANDARD 23
