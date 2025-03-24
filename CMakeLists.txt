@@ -10,6 +10,10 @@ if (${CMAKE_CXX_COMPILER} MATCHES "clang-cl")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
 endif()
 
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+
 find_package(Git QUIET)
 
 if(GIT_FOUND)
