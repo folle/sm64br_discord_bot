@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <exception>
 #include <iostream>
 
@@ -9,8 +10,8 @@ int main(const int argc, char const *const *const argv) {
     bot.Start();
   } catch (std::exception const& exception) {
     std::cerr << exception.what();
-    return -1;
+    return EXIT_FAILURE;
   }
 
-  return 0;
+  return EXIT_SUCCESS;
 }

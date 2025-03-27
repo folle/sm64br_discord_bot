@@ -138,7 +138,7 @@ bool PayloadParser::ParseRunData(nlohmann::json const& run_data) {
 
   auto const& game_data = run_data["gameData"];
 
-  attempt_count_ = game_data["attemptCount"].get<size_t>();
+  attempt_count_ = game_data["attemptCount"].get<std::size_t>();
 
   url_ = fmt::format("https://therun.gg/{}", game_data["url"].get<std::string>());
 
@@ -147,7 +147,7 @@ bool PayloadParser::ParseRunData(nlohmann::json const& run_data) {
 
 bool PayloadParser::ParseSplitsData(nlohmann::json const& splits_data) {
   for (auto const& split_data : splits_data) {
-    auto const split_index = static_cast<size_t>(std::stoll(split_data["index"].get<std::string>()));
+    auto const split_index = static_cast<std::size_t>(std::stoll(split_data["index"].get<std::string>()));
 
     SplitInfo split_info{};
     split_info.name = split_data["name"].get<std::string>();
@@ -177,8 +177,8 @@ std::string const& PayloadParser::GetUser() const noexcept {
 }
 
 std::string PayloadParser::GetString() const noexcept {
-  constexpr size_t kDiscordMaximumMessageSize = 2000;
-  constexpr size_t kFieldSpacing = 4;
+  constexpr std::size_t kDiscordMaximumMessageSize = 2000;
+  constexpr std::size_t kFieldSpacing = 4;
 
   std::string run_info;
   run_info.reserve(kDiscordMaximumMessageSize);
@@ -186,9 +186,9 @@ std::string PayloadParser::GetString() const noexcept {
   run_info.append(fmt::format("**Runner: {}**\nCategoria: {}\nPlataforma: {}\nPB: {}\nBPT: {}\nSOB: {}\nTentativa: {}\n{}\n", 
                               user_, category_, emulator_ ? "Emulador" : "Console", pb_, bpt_, sob_, attempt_count_, url_));
 
-  size_t biggest_split_name_length{};
-  size_t biggest_split_pb_difference_length{};
-  size_t biggest_split_time_length{};
+  std::size_t biggest_split_name_length{};
+  std::size_t biggest_split_pb_difference_length{};
+  std::size_t biggest_split_time_length{};
   std::ranges::for_each(splits_, [&biggest_split_name_length, &biggest_split_pb_difference_length, &biggest_split_time_length](auto const& split) {
     auto const& split_info = split.second;
 

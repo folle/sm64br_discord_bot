@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <map>
 #include <string>
 
@@ -38,12 +39,12 @@ private:
   std::string sob_;
   std::string url_;
 
-  size_t attempt_count_{};
+  std::size_t attempt_count_{};
 
   struct SplitInfo {
     std::string name;
     std::string pb_difference;
     std::string time;
   };
-  std::map<size_t, SplitInfo> splits_;
+  std::map<std::size_t, SplitInfo> splits_;
 };
