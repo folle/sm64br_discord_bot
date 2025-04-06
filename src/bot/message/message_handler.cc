@@ -25,14 +25,13 @@ MessageHandler::MessageHandler(std::shared_ptr<dpp::cluster> bot) noexcept :
 }
 
 void MessageHandler::Process(dpp::message const& message) noexcept {
-  dpp::guild_member member;
-  try {
-    member = bot_->guild_get_member_sync(message.guild_id, message.author.id);
-  } catch (dpp::rest_exception const& rest_exception) {
-    logger_.Error("Failed to get member while processing message create. Exception '{}'", rest_exception.what());
+  auto const member_confirmation = bot_->co_guild_get_member(message.guild_id, message.author.id).sync_wait();
+  if (member_confirmation.is_error()) {
+    logger_.Error("Failed to get member while processing message create. Error '{}'", member_confirmation.get_error().human_readable);
     return;
   }
 
+  auto const member = member_confirmation.get<dpp::guild_member>();
   auto const from_moderator = std::any_of(member.get_roles().begin(),
                                           member.get_roles().end(),
                                           [this](auto const& role) { return Settings::Get().GetRoleId(Settings::Roles::kModerator) == role; });
@@ -113,17 +112,18 @@ void MessageHandler::SendNominationMessage(dpp::snowflake const user_id, std::st
   auto nomination_content = nomination_content_header_;
   nomination_content.append(clip_url);
 
-  try {
-    auto const sent_message = bot_->direct_message_create_sync(user_id, dpp::message(nomination_content));
-
-    auto const awards_reactions_and_categories = Settings::Get().GetAwardsReactionsAndCategories();
-    for (auto it = awards_reactions_and_categories.begin(); it != awards_reactions_and_categories.end(); ++it) {
-      auto const add_reaction_confirmation = bot_->message_add_reaction_sync(sent_message, it->first);
-      if (!add_reaction_confirmation.success) {
-        logger_.Error("Failed to add awards reaction '{}' in nomination message '{}' to user '{}'", it->first, sent_message.id, user_id);
-      }
+  auto const sent_message_confirmation = bot_->co_direct_message_create(user_id, dpp::message(nomination_content)).sync_wait();
+  if (sent_message_confirmation.is_error()) {
+    logger_.Error("Failed to send nomination message '{}' to user '{}'. Error: '{}'", nomination_content, user_id, sent_message_confirmation.get_error().human_readable);
+    return;
+  }
+  
+  auto const sent_message = sent_message_confirmation.get<dpp::message>();
+  auto const awards_reactions_and_categories = Settings::Get().GetAwardsReactionsAndCategories();
+  for (auto it = awards_reactions_and_categories.begin(); it != awards_reactions_and_categories.end(); ++it) {
+    auto const add_reaction_confirmation = bot_->co_message_add_reaction(sent_message, it->first).sync_wait();
+    if (add_reaction_confirmation.is_error()) {
+      logger_.Error("Failed to add awards reaction '{}' in nomination message '{}' to user '{}. Error: '{}'", it->first, sent_message.id, user_id, add_reaction_confirmation.get_error().human_readable);
     }
-  } catch (dpp::exception const& rest_exception) {
-    logger_.Error("Failed to send nomination message '{}' to user '{}'. Exception: '{}'", nomination_content, user_id, rest_exception.what());
   }
 }

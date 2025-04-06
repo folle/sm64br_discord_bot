@@ -29,8 +29,8 @@ private:
   void OnGuildMemberAdd(dpp::guild_member_add_t const& guild_member_add) const noexcept;
   void OnGuildMemberRemove(dpp::guild_member_remove_t const& guild_member_remove) const noexcept;
 
-  void ClearStreamingRoles() const noexcept;
-  void ClearStreamingMessages() const noexcept;
+  void ClearStreamingRoles() const;
+  void ClearStreamingMessages() const;
 
 private:
   Logger const logger_ = LoggerFactory::Get().Create("SM64BR Discord Bot");

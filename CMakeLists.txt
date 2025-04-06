@@ -29,7 +29,7 @@ if(GIT_FOUND)
   endif()
 endif()
 
-project(sm64br_discord_bot VERSION 1.0 DESCRIPTION "SM64BR Discord Bot")  
+project(sm64br_discord_bot VERSION 1.0 DESCRIPTION "SM64BR Discord Bot")
 
 # Bot project
 add_executable(${PROJECT_NAME}

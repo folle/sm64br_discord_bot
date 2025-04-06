@@ -90,14 +90,13 @@ void Sm64brDiscordBot::OnMessageReactionAdd(dpp::message_reaction_add_t const& m
   }
   
   message_reaction_futures_.push_back(std::async(std::launch::async, [this, message_id, channel_id]() {
-    dpp::message nomination_message;
-    try {
-      nomination_message = bot_->message_get_sync(message_id, channel_id);
-    } catch (dpp::exception const& rest_exception) {
-      logger_.Error("Failed to get nomination message '{}' in channel '{}'. Exception: '{}'", message_id, channel_id, rest_exception.what());
+    auto const nomination_message_confirmation = bot_->co_message_get(message_id, channel_id).sync_wait();
+    if (nomination_message_confirmation.is_error()) {
+      logger_.Error("Failed to get nomination message '{}' in channel '{}'.Error: '{}'", message_id, channel_id, nomination_message_confirmation.get_error().human_readable);
       return;
     }
 
+    auto const nomination_message = nomination_message_confirmation.get<dpp::message>();
     auto const& reactions = nomination_message.reactions;
     auto const user_reaction = std::find_if(reactions.cbegin(), reactions.cend(), [](auto const& reaction) {
       return reaction.count > 1;
@@ -155,17 +154,16 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
                                                                 dpp::user::get_mention(streaming_user_id),
                                                                 streaming_activity->details,
                                                                 streaming_activity->url));
-        dpp::snowflake streaming_message_id{};
-        try {
-          streaming_message_id = bot_->message_create_sync(streaming_message).id;
-        } catch (dpp::rest_exception const& rest_exception) {
-          logger_.Error("Failed to create streaming message for user '{}' while processing presence update. Exception '{}'",
-                        streaming_user_id, rest_exception.what());
+
+        auto const streaming_message_confirmation = bot_->co_message_create(streaming_message).sync_wait();
+        if (streaming_message_confirmation.is_error()) {
+          logger_.Error("Failed to create streaming message for user '{}' while processing presence update. Error '{}'", streaming_user_id, streaming_message_confirmation.get_error().human_readable);
           return;
         }
 
         bot_->guild_member_add_role(Settings::Get().GetGuildId(), streaming_user_id, Settings::Get().GetRoleId(Settings::Roles::kStreaming));
 
+        auto const streaming_message_id = streaming_message_confirmation.get<dpp::message>().id;
         streaming_users_ids_and_messages_ids_[streaming_user_id] = streaming_message_id;
       }
     } else {
@@ -197,12 +195,18 @@ void Sm64brDiscordBot::OnReady(dpp::ready_t const& ready) const noexcept {
   logger_.Info("Bot event handler loop started");
 }
 
-void Sm64brDiscordBot::ClearStreamingRoles() const noexcept {
+void Sm64brDiscordBot::ClearStreamingRoles() const {
   dpp::snowflake highest_member_id{};
   dpp::guild_member_map members;
   do {
     uint16_t constexpr kMaxMembersPerCall = 1000;
-    members = bot_->guild_get_members_sync(Settings::Get().GetGuildId(), kMaxMembersPerCall, highest_member_id);
+    auto const members_confirmation = bot_->co_guild_get_members(Settings::Get().GetGuildId(), kMaxMembersPerCall, highest_member_id).sync_wait();
+    if (members_confirmation.is_error()) {
+      logger_.Error("Failed to get members when clearing streaming roles. Error: '{}'", members_confirmation.get_error().human_readable);
+      throw members_confirmation.get_error();
+    }
+
+    members = members_confirmation.get<dpp::guild_member_map>();
     for (auto& member : members) {
       if (highest_member_id < member.first) {
         highest_member_id = member.first;
@@ -211,26 +215,38 @@ void Sm64brDiscordBot::ClearStreamingRoles() const noexcept {
       auto const& roles = member.second.get_roles();
       auto const it_streaming_role =  std::find(roles.cbegin(), roles.cend(), Settings::Get().GetRoleId(Settings::Roles::kStreaming));
       if (it_streaming_role != roles.cend()) {
-        bot_->guild_member_remove_role_sync(Settings::Get().GetGuildId(), member.second.user_id, Settings::Get().GetRoleId(Settings::Roles::kStreaming));
+        auto const member_remove_role_confirmation = bot_->co_guild_member_remove_role(Settings::Get().GetGuildId(), member.second.user_id, Settings::Get().GetRoleId(Settings::Roles::kStreaming)).sync_wait();
+        if (member_remove_role_confirmation.is_error()) {
+          logger_.Error("Failed to remove role from member while clearing streaming roles. Error: '{}'", member_remove_role_confirmation.get_error().human_readable);
+          throw member_remove_role_confirmation.get_error();
+        }
       }
     }
   } while (!members.empty());
 }
 
-void Sm64brDiscordBot::ClearStreamingMessages() const noexcept {
+void Sm64brDiscordBot::ClearStreamingMessages() const {
   dpp::snowflake highest_streaming_message_id = 1ULL;
   dpp::message_map streaming_messages;
   do {
     auto constexpr kMaxMessagesPerCall = 100ULL;
-    streaming_messages = bot_->messages_get_sync(Settings::Get().GetChannelId(Settings::Channels::kStreams), {}, {}, 
-                                                 highest_streaming_message_id, kMaxMessagesPerCall);
+    auto const streaming_messages_confirmation = bot_->co_messages_get(Settings::Get().GetChannelId(Settings::Channels::kStreams), {}, {}, highest_streaming_message_id, kMaxMessagesPerCall).sync_wait();
+    if (streaming_messages_confirmation.is_error()) {
+      logger_.Error("Failed to messages when clearing streaming messages. Error: '{}'", streaming_messages_confirmation.get_error().human_readable);
+      throw streaming_messages_confirmation.get_error();
+    }
 
+    streaming_messages = streaming_messages_confirmation.get<dpp::message_map>();
     for (auto const& streaming_message : streaming_messages) {
       if (highest_streaming_message_id < streaming_message.first) {
         highest_streaming_message_id = streaming_message.first;
       }
 
-      bot_->message_delete_sync(streaming_message.first, Settings::Get().GetChannelId(Settings::Channels::kStreams));
+      auto const message_delete_confirmation = bot_->co_message_delete(streaming_message.first, Settings::Get().GetChannelId(Settings::Channels::kStreams)).sync_wait();
+      if (message_delete_confirmation.is_error()) {
+        logger_.Error("Failed to delete message when clearing streaming messages. Error: '{}'", message_delete_confirmation.get_error().human_readable);
+        throw message_delete_confirmation.get_error();
+      }
     }
   } while (!streaming_messages.empty());
 }
