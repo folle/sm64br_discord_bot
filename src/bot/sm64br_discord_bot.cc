@@ -1,6 +1,7 @@
 #include "sm64br_discord_bot.h"
 
 #include <algorithm>
+#include <ranges>
 
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
@@ -98,7 +99,7 @@ void Sm64brDiscordBot::OnMessageReactionAdd(dpp::message_reaction_add_t const& m
 
     auto const nomination_message = nomination_message_confirmation.get<dpp::message>();
     auto const& reactions = nomination_message.reactions;
-    auto const user_reaction = std::find_if(reactions.cbegin(), reactions.cend(), [](auto const& reaction) {
+    auto const user_reaction = std::ranges::find_if(reactions, [](auto const& reaction) {
       return reaction.count > 1;
     });
 
@@ -107,7 +108,6 @@ void Sm64brDiscordBot::OnMessageReactionAdd(dpp::message_reaction_add_t const& m
     }
 
     auto const& content = nomination_message.content;
-
     auto const awards_reactions_and_categories = Settings::Get().GetAwardsReactionsAndCategories();
     if (!awards_reactions_and_categories.contains(user_reaction->emoji_name)) {
       logger_.Error("Received an invalid awards reaction '{}' in message '{}'", user_reaction->emoji_name, content);
@@ -132,10 +132,11 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
 
   presence_update_futures_.push_back(std::async(std::launch::async, [this, presence_update]() {
     auto const& activies = presence_update.rich_presence.activities;
-    auto const streaming_activity = std::find_if(activies.cbegin(), activies.cend(), [](auto const& activity) {
-      return (activity.type == dpp::activity_type::at_streaming) &&
-        (((activity.name == "Twitch") && (activity.state == "Super Mario 64")) ||
-         ((activity.name == "YouTube") && (activity.details.contains("Mario 64") || activity.details.contains("SM64"))));
+    auto const streaming_activity = std::ranges::find_if(activies, [](auto const& activity) {
+      auto const is_streaming = activity.type == dpp::activity_type::at_streaming;
+      auto const is_streaming_sm64_in_twitch = (activity.name == "Twitch") && (activity.state == "Super Mario 64");
+      auto const is_streaming_sm64_in_youtube = (activity.name == "YouTube") && (activity.details.contains("Mario 64") || activity.details.contains("SM64"));
+      return is_streaming && (is_streaming_sm64_in_twitch || is_streaming_sm64_in_youtube);
     });
     auto const is_streaming_sm64 = activies.cend() != streaming_activity;
 
@@ -149,12 +150,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
       if (!streaming_message_sent_) {
         logger_.Info("User '{}' started streaming Super Mario 64", streaming_user_id);
 
-        auto const streaming_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kStreams),
-                                                    fmt::format("{} **{}**\n{}", 
-                                                                dpp::user::get_mention(streaming_user_id),
-                                                                streaming_activity->details,
-                                                                streaming_activity->url));
-
+        auto const streaming_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kStreams), fmt::format("{} **{}**\n{}", dpp::user::get_mention(streaming_user_id), streaming_activity->details, streaming_activity->url));
         auto const streaming_message_confirmation = bot_->co_message_create(streaming_message).sync_wait();
         if (streaming_message_confirmation.is_error()) {
           logger_.Error("Failed to create streaming message for user '{}' while processing presence update. Error '{}'", streaming_user_id, streaming_message_confirmation.get_error().human_readable);
@@ -180,14 +176,12 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
 }
 
 void Sm64brDiscordBot::OnGuildMemberAdd(dpp::guild_member_add_t const& guild_member_add) const noexcept {
-  auto const join_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kUpdates),
-                                         fmt::format("**{}** acabou de entrar no servidor.", guild_member_add.added.get_user()->get_mention()));
+  auto const join_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kUpdates), fmt::format("**{}** acabou de entrar no servidor.", guild_member_add.added.get_user()->get_mention()));
   bot_->message_create(join_message);
 }
 
 void Sm64brDiscordBot::OnGuildMemberRemove(dpp::guild_member_remove_t const& guild_member_remove) const noexcept {
-  auto const leave_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kUpdates),
-                                          fmt::format("**{}** acabou de sair no servidor.", guild_member_remove.removed.get_mention()));
+  auto const leave_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kUpdates), fmt::format("**{}** acabou de sair no servidor.", guild_member_remove.removed.get_mention()));
   bot_->message_create(leave_message);
 }
 
@@ -207,13 +201,13 @@ void Sm64brDiscordBot::ClearStreamingRoles() const {
     }
 
     members = members_confirmation.get<dpp::guild_member_map>();
-    for (auto& member : members) {
+    std::ranges::for_each(members, [this, &highest_member_id](auto const& member) {
       if (highest_member_id < member.first) {
         highest_member_id = member.first;
       }
 
       auto const& roles = member.second.get_roles();
-      auto const it_streaming_role =  std::find(roles.cbegin(), roles.cend(), Settings::Get().GetRoleId(Settings::Roles::kStreaming));
+      auto const it_streaming_role = std::find(roles.cbegin(), roles.cend(), Settings::Get().GetRoleId(Settings::Roles::kStreaming));
       if (it_streaming_role != roles.cend()) {
         auto const member_remove_role_confirmation = bot_->co_guild_member_remove_role(Settings::Get().GetGuildId(), member.second.user_id, Settings::Get().GetRoleId(Settings::Roles::kStreaming)).sync_wait();
         if (member_remove_role_confirmation.is_error()) {
@@ -221,7 +215,7 @@ void Sm64brDiscordBot::ClearStreamingRoles() const {
           throw member_remove_role_confirmation.get_error();
         }
       }
-    }
+    });
   } while (!members.empty());
 }
 
@@ -237,7 +231,7 @@ void Sm64brDiscordBot::ClearStreamingMessages() const {
     }
 
     streaming_messages = streaming_messages_confirmation.get<dpp::message_map>();
-    for (auto const& streaming_message : streaming_messages) {
+    std::ranges::for_each(streaming_messages, [this, &highest_streaming_message_id](auto const& streaming_message) {
       if (highest_streaming_message_id < streaming_message.first) {
         highest_streaming_message_id = streaming_message.first;
       }
@@ -247,6 +241,6 @@ void Sm64brDiscordBot::ClearStreamingMessages() const {
         logger_.Error("Failed to delete message when clearing streaming messages. Error: '{}'", message_delete_confirmation.get_error().human_readable);
         throw message_delete_confirmation.get_error();
       }
-    }
+    });
   } while (!streaming_messages.empty());
 }

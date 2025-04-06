@@ -1,6 +1,7 @@
 #include "message_handler.h"
 
 #include <algorithm>
+#include <ranges>
 #include <utility>
 
 #include <fmt/format.h>
@@ -19,9 +20,9 @@ MessageHandler::MessageHandler(std::shared_ptr<dpp::cluster> bot) noexcept :
   nomination_content_header_ = std::string("Você gostaria de indicar esse vídeo para o Super Mario 64 Brasil Awards? Se sim, reaja de acordo com a categoria desejada (apenas uma reação por vídeo):\n");
 
   auto const awards_reactions_and_categories = Settings::Get().GetAwardsReactionsAndCategories();
-  for (auto it = awards_reactions_and_categories.begin(); it != awards_reactions_and_categories.end(); ++it) {
-    nomination_content_header_.append(fmt::format("{} - {}\n", it->first, it->second));
-  }
+  std::ranges::for_each(awards_reactions_and_categories, [this](auto const& reaction_and_category) {
+    nomination_content_header_.append(fmt::format("{} - {}\n", reaction_and_category.first, reaction_and_category.second));
+  });
 }
 
 void MessageHandler::Process(dpp::message const& message) noexcept {
@@ -32,9 +33,7 @@ void MessageHandler::Process(dpp::message const& message) noexcept {
   }
 
   auto const member = member_confirmation.get<dpp::guild_member>();
-  auto const from_moderator = std::any_of(member.get_roles().begin(),
-                                          member.get_roles().end(),
-                                          [this](auto const& role) { return Settings::Get().GetRoleId(Settings::Roles::kModerator) == role; });
+  auto const from_moderator = std::ranges::any_of(member.get_roles(), [this](auto const& role) { return Settings::Get().GetRoleId(Settings::Roles::kModerator) == role; });
   auto const from_bot = message.author.is_bot();
 
   auto const is_announcement_message = 0 == message.content.rfind("!a ", 0);
@@ -94,18 +93,16 @@ void MessageHandler::ProcessStreamingMessage(dpp::snowflake const user_id, dpp::
   logger_.Info("Deleted streaming message with id '{}'", message_id);
 }
 
-void MessageHandler::ProcessAwardsMessage(dpp::snowflake const user_id, dpp::snowflake const message_id, std::string const& content, std::vector<dpp::attachment> const& attachments) noexcept {
+void MessageHandler::ProcessAwardsMessage(dpp::snowflake const user_id, dpp::snowflake const message_id, std::string const& content, std::vector<dpp::attachment> const& attachments) noexcept {    
   for (auto it = std::sregex_iterator(content.begin(), content.end(), url_regex_); it != std::sregex_iterator(); ++it) {
     SendNominationMessage(user_id, it->str());
   }
 
-  for (auto const attachment : attachments) {
-    if (attachment.content_type.rfind("video/", 0) != 0) {
-      continue;
+  std::ranges::for_each(attachments, [this, &user_id](auto const& attachment) {
+    if (attachment.content_type.rfind("video/", 0) == 0) {
+      SendNominationMessage(user_id, attachment.url);
     }
-
-    SendNominationMessage(user_id, attachment.url);
-  }
+  });
 }
 
 void MessageHandler::SendNominationMessage(dpp::snowflake const user_id, std::string const& clip_url) noexcept {
@@ -120,10 +117,10 @@ void MessageHandler::SendNominationMessage(dpp::snowflake const user_id, std::st
   
   auto const sent_message = sent_message_confirmation.get<dpp::message>();
   auto const awards_reactions_and_categories = Settings::Get().GetAwardsReactionsAndCategories();
-  for (auto it = awards_reactions_and_categories.begin(); it != awards_reactions_and_categories.end(); ++it) {
-    auto const add_reaction_confirmation = bot_->co_message_add_reaction(sent_message, it->first).sync_wait();
+  std::ranges::for_each(awards_reactions_and_categories, [this, &sent_message, &user_id](auto const& reaction_and_category) {
+    auto const add_reaction_confirmation = bot_->co_message_add_reaction(sent_message, reaction_and_category.first).sync_wait();
     if (add_reaction_confirmation.is_error()) {
-      logger_.Error("Failed to add awards reaction '{}' in nomination message '{}' to user '{}. Error: '{}'", it->first, sent_message.id, user_id, add_reaction_confirmation.get_error().human_readable);
+      logger_.Error("Failed to add awards reaction '{}' in nomination message '{}' to user '{}. Error: '{}'", reaction_and_category.first, sent_message.id, user_id, add_reaction_confirmation.get_error().human_readable);
     }
-  }
+  });
 }

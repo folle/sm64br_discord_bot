@@ -1,6 +1,7 @@
 #include "settings.h"
 
 #include <fstream>
+#include <ranges>
 
 #include <nlohmann/json.hpp>
 
@@ -90,40 +91,33 @@ Settings::Settings() {
   guild_id_ = server_data["guild"].get<dpp::snowflake>();
 
   auto const& channels_json = server_data["channels"];
-  for (auto it_channel = channels_json.begin(); it_channel != channels_json.end(); ++it_channel) {
-    channels_ids_[::ServerChannelStringToEnum(it_channel.key())] = it_channel.value().get<dpp::snowflake>();
-  }
+  std::ranges::for_each(channels_json.items(), [this](auto const& channel_json) { channels_ids_[::ServerChannelStringToEnum(channel_json.key())] = channel_json.value().template get<dpp::snowflake>(); });
   channels_ids_[Channels::kNone] = dpp::snowflake{};
 
   auto const& roles_json = server_data["roles"];
-  for (auto it_role = roles_json.begin(); it_role != roles_json.end(); ++it_role) {
-    roles_ids_[::ServerRoleStringToEnum(it_role.key())] = it_role.value().get<dpp::snowflake>();
-  }
+  std::ranges::for_each(roles_json.items(), [this](auto const& role_json) { roles_ids_[::ServerRoleStringToEnum(role_json.key())] = role_json.value().template get<dpp::snowflake>(); });
   roles_ids_[Roles::kNone] = dpp::snowflake{};
 
   auto const& users_json = settings_json["users"];
-  for (auto it_user = users_json.begin(); it_user != users_json.end(); ++it_user) {
-    users_ids_[::UserStringToEnum(it_user.key())] = it_user.value().get<dpp::snowflake>();
-  }
+  std::ranges::for_each(users_json.items(), [this](auto const& user_json) { users_ids_[::UserStringToEnum(user_json.key())] = user_json.value().template get<dpp::snowflake>(); });
   users_ids_[Users::kNone] = dpp::snowflake{};
 
   auto const& awards_json = settings_json["awards"];
-  for (auto it_awards = awards_json.begin(); it_awards != awards_json.end(); ++it_awards) {
-    awards_reactions_and_categories_[it_awards.key()] = it_awards.value();
-  }
+  std::ranges::for_each(awards_json.items(), [this](auto const& award_json) { awards_reactions_and_categories_[award_json.key()] = award_json.value(); });
 
   auto const& the_run_data = settings_json["the_run"];
   the_run_endpoint_ = the_run_data["endpoint"].get<std::string>();
 
   auto const& thresholds_json = the_run_data["thresholds"];
-  for (auto it_threshold = thresholds_json.begin(); it_threshold != thresholds_json.end(); ++it_threshold) {
-    auto const category = ::CategoryStringToEnum(it_threshold.value()["category"].get<std::string>());
+  std::ranges::for_each(thresholds_json.items(), [this](auto const& threshold_json) {
+    auto const category = ::CategoryStringToEnum(threshold_json.value()["category"].template get<std::string>());
 
-    TheRunThresholds thresholds;
-    thresholds.bpt = it_threshold.value()["bpt"].get<long long>();
-    thresholds.percentage = it_threshold.value()["percentage"].get<double>();
+    TheRunThresholds thresholds{
+      .bpt = threshold_json.value()["bpt"].template get<long long>(),
+      .percentage = threshold_json.value()["percentage"].template get<double>()
+    };
     the_run_thresholds_[category] = std::move(thresholds);
-  }
+  });
   the_run_thresholds_[Categories::kNone] = {};
 }
 

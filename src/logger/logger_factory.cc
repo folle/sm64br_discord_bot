@@ -1,5 +1,7 @@
 #include "logger_factory.h"
 
+#include <ranges>
+
 #include <spdlog/async.h>
 
 LoggerFactory& LoggerFactory::Get() noexcept {
@@ -13,9 +15,7 @@ LoggerFactory::LoggerFactory() noexcept
 }
 
 LoggerFactory::~LoggerFactory() {
-  for (auto const& sink : sinks_) {
-    sink->flush();
-  }
+  std::ranges::for_each(sinks_, [](auto const& sink) { sink->flush(); });
 }
 
 Logger LoggerFactory::Create(std::string const& name) const noexcept {

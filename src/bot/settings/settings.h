@@ -37,8 +37,8 @@ public:
   };
 
   struct TheRunThresholds {
-    double percentage{};
     long long bpt{};
+    double percentage{};
   };
 
   static Settings& Get() noexcept;
