@@ -8,7 +8,11 @@
 * The Run integration for pacepals pings
 
 ## Supported Systems
-* Windows
-* Linux x64
-* Linux AArch64
-* macOS AArch64
+* Windows (clang-cl)
+* Linux x64 (clang++)
+* Linux AArch64 (clang++)
+* macOS AArch64 (clang++)
+
+# Building
+Install Git and the corresponding compiler for your system.
+All dependencies are built with VCPKG automatically during the CMake configuration step.
