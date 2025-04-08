@@ -1,9 +1,14 @@
 cmake_minimum_required(VERSION 3.25.1)
 
 # Suppress: argument unused during compilation: '/Zc:preprocessor' [-Wunused-command-line-argument]
+if (${CMAKE_C_COMPILER} MATCHES "clang-cl")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Qunused-arguments")
+endif()
+
 if (${CMAKE_CXX_COMPILER} MATCHES "clang-cl")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
 endif()
+# /Suppress: argument unused during compilation: '/Zc:preprocessor' [-Wunused-command-line-argument]
 
 find_program(CLANG_TIDY_EXECUTABLE NAMES "clang-tidy" REQUIRED)
 #set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE} -checks=-*,readability-*)
