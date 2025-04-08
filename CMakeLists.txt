@@ -1,16 +1,12 @@
 cmake_minimum_required(VERSION 3.25.1)
 
-# Suppress: argument unused during compilation: '/Zc:preprocessor' [-Wunused-command-line-argument]
-if (${CMAKE_C_COMPILER} MATCHES "clang-cl")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Qunused-arguments")
-endif()
-
+# /EHs: enable C++ exceptions
+# -Qunused-arguments: suppress 'argument unused during compilation: '/Zc:preprocessor' [-Wunused-command-line-argument]'
 if (${CMAKE_CXX_COMPILER} MATCHES "clang-cl")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
+  add_compile_options(/EHsc -Qunused-arguments)
 endif()
-# /Suppress: argument unused during compilation: '/Zc:preprocessor' [-Wunused-command-line-argument]
 
-find_program(CLANG_TIDY_EXECUTABLE NAMES "clang-tidy" REQUIRED)
+#find_program(CLANG_TIDY_EXECUTABLE NAMES "clang-tidy" REQUIRED)
 #set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE} -checks=-*,readability-*)
 
 find_package(Git REQUIRED)
