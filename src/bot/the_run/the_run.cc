@@ -1,9 +1,8 @@
 #include "the_run.h"
 
 #include <exception>
+#include <print>
 #include <utility>
-
-#include <fmt/format.h>
 
 #include "payload_parser.h"
 #include "settings/settings.h"
@@ -117,7 +116,7 @@ void TheRun::OnMessage(websocketpp::connection_hdl const handler, websocketpp::c
 
   logger_.Info("Payload triggered a ping '{}'", message->get_payload());
 
-  auto const pacepals_message = fmt::format("{}\n{}", dpp::role::get_mention(Settings::Get().GetRoleId(Settings::Roles::kPacepals)),  payload_parser.GetString());
+  auto const pacepals_message = std::format("{}\n{}", dpp::role::get_mention(Settings::Get().GetRoleId(Settings::Roles::kPacepals)),  payload_parser.GetString());
   bot_->message_create(dpp::message(Settings::Get().GetChannelId(Settings::Channels::kGeneral), pacepals_message));
   announced_users_.insert(payload_parser.GetUser());
 }

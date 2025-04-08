@@ -1,9 +1,9 @@
 #include "sm64br_discord_bot.h"
 
 #include <algorithm>
+#include <print>
 #include <ranges>
 
-#include <fmt/format.h>
 #include <nlohmann/json.hpp>
 
 Sm64brDiscordBot::Sm64brDiscordBot() {
@@ -86,14 +86,14 @@ void Sm64brDiscordBot::OnMessageReactionAdd(dpp::message_reaction_add_t const& m
       return;
     }
   } catch (nlohmann::json::exception const& json_exception) {
-    logger_.Error("Failed to get user id from nomination message '{}' in channel '{}'. Exception: '{}'", message_id, channel_id, json_exception.what());
+    logger_.Error("Failed to get user id from nomination message '{}' in channel '{}'. Exception: '{}'", message_id.str(), channel_id.str(), json_exception.what());
     return;
   }
   
   message_reaction_futures_.push_back(std::async(std::launch::async, [this, message_id, channel_id]() {
     auto const nomination_message_confirmation = bot_->co_message_get(message_id, channel_id).sync_wait();
     if (nomination_message_confirmation.is_error()) {
-      logger_.Error("Failed to get nomination message '{}' in channel '{}'.Error: '{}'", message_id, channel_id, nomination_message_confirmation.get_error().human_readable);
+      logger_.Error("Failed to get nomination message '{}' in channel '{}'.Error: '{}'", message_id.str(), channel_id.str(), nomination_message_confirmation.get_error().human_readable);
       return;
     }
 
@@ -122,7 +122,7 @@ void Sm64brDiscordBot::OnMessageReactionAdd(dpp::message_reaction_add_t const& m
     }
 
     auto const petalite_user_id = Settings::Get().GetUserId(Settings::Users::kPetalite);
-    auto const petalite_content = fmt::format("Clipe: {}\nCategoria: {}", clip_url, nominated_category);
+    auto const petalite_content = std::format("Clipe: {}\nCategoria: {}", clip_url, nominated_category);
     bot_->direct_message_create(petalite_user_id, dpp::message(petalite_content));
   }));
 }
@@ -148,12 +148,12 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
     auto const streaming_message_sent_ = (streaming_users_ids_and_messages_ids_.cend() != it_user_id_and_message_id);
     if (is_streaming_sm64) {
       if (!streaming_message_sent_) {
-        logger_.Info("User '{}' started streaming Super Mario 64", streaming_user_id);
+        logger_.Info("User '{}' started streaming Super Mario 64", streaming_user_id.str());
 
-        auto const streaming_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kStreams), fmt::format("{} **{}**\n{}", dpp::user::get_mention(streaming_user_id), streaming_activity->details, streaming_activity->url));
+        auto const streaming_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kStreams), std::format("{} **{}**\n{}", dpp::user::get_mention(streaming_user_id), streaming_activity->details, streaming_activity->url));
         auto const streaming_message_confirmation = bot_->co_message_create(streaming_message).sync_wait();
         if (streaming_message_confirmation.is_error()) {
-          logger_.Error("Failed to create streaming message for user '{}' while processing presence update. Error '{}'", streaming_user_id, streaming_message_confirmation.get_error().human_readable);
+          logger_.Error("Failed to create streaming message for user '{}' while processing presence update. Error '{}'", streaming_user_id.str(), streaming_message_confirmation.get_error().human_readable);
           return;
         }
 
@@ -164,7 +164,7 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
       }
     } else {
       if (streaming_message_sent_) {
-        logger_.Info("User '{}' finished streaming Super Mario 64", streaming_user_id);
+        logger_.Info("User '{}' finished streaming Super Mario 64", streaming_user_id.str());
 
         bot_->message_delete(it_user_id_and_message_id->second, Settings::Get().GetChannelId(Settings::Channels::kStreams));
         bot_->guild_member_remove_role(Settings::Get().GetGuildId(), streaming_user_id, Settings::Get().GetRoleId(Settings::Roles::kStreaming));
@@ -176,12 +176,12 @@ void Sm64brDiscordBot::OnPresenceUpdate(dpp::presence_update_t const& presence_u
 }
 
 void Sm64brDiscordBot::OnGuildMemberAdd(dpp::guild_member_add_t const& guild_member_add) const noexcept {
-  auto const join_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kUpdates), fmt::format("**{}** acabou de entrar no servidor.", guild_member_add.added.get_user()->get_mention()));
+  auto const join_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kUpdates), std::format("**{}** acabou de entrar no servidor.", guild_member_add.added.get_user()->get_mention()));
   bot_->message_create(join_message);
 }
 
 void Sm64brDiscordBot::OnGuildMemberRemove(dpp::guild_member_remove_t const& guild_member_remove) const noexcept {
-  auto const leave_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kUpdates), fmt::format("**{}** acabou de sair no servidor.", guild_member_remove.removed.get_mention()));
+  auto const leave_message = dpp::message(Settings::Get().GetChannelId(Settings::Channels::kUpdates), std::format("**{}** acabou de sair no servidor.", guild_member_remove.removed.get_mention()));
   bot_->message_create(leave_message);
 }
 

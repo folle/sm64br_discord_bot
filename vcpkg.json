@@ -3,9 +3,7 @@
   "dependencies": [
     "boost-beast",
     "dpp",
-    "fmt",
     "nlohmann-json",
-    "openssl",
     "spdlog"
   ]
 }

@@ -3,8 +3,8 @@
 #include <chrono>
 #include <cstdlib>
 #include <exception>
+#include <print>
 #include <ranges>
-#include <fmt/format.h>
 
 #include "settings/settings.h"
 
@@ -36,22 +36,22 @@ namespace {
     };
 
     if (0 != split_time.hours.count()) {
-      return fmt::format("{}{}:{:02}:{:02}.{:03}",
+      return std::format("{}{}:{:02}:{:02}.{:03}",
                          get_signal_string(split_time.positive),
                          split_time.hours.count(), split_time.minutes.count(), split_time.seconds.count(), split_time.milliseconds.count());
     }
 
     if (0 != split_time.minutes.count()) {
-      return fmt::format("{}{}:{:02}.{:03}",
+      return std::format("{}{}:{:02}.{:03}",
                          get_signal_string(split_time.positive),
                          split_time.minutes.count(), split_time.seconds.count(), split_time.milliseconds.count());
     }
 
     if (0 != split_time.seconds.count()) {
-      return fmt::format("{}{}.{:03}", get_signal_string(split_time.positive), split_time.seconds.count(), split_time.milliseconds.count());
+      return std::format("{}{}.{:03}", get_signal_string(split_time.positive), split_time.seconds.count(), split_time.milliseconds.count());
     }
 
-    return fmt::format("{}0.{:03}", get_signal_string(split_time.positive), split_time.milliseconds.count());
+    return std::format("{}0.{:03}", get_signal_string(split_time.positive), split_time.milliseconds.count());
   }
 
   std::string SplitMillisecondsToString(long long const split_milliseconds, bool const include_signal) {
@@ -140,7 +140,7 @@ bool PayloadParser::ParseRunData(nlohmann::json const& run_data) {
 
   attempt_count_ = game_data["attemptCount"].get<std::size_t>();
 
-  url_ = fmt::format("https://therun.gg/{}", game_data["url"].get<std::string>());
+  url_ = std::format("https://therun.gg/{}", game_data["url"].get<std::string>());
 
   return true;
 }
@@ -183,7 +183,7 @@ std::string PayloadParser::GetString() const noexcept {
   std::string run_info;
   run_info.reserve(kDiscordMaximumMessageSize);
 
-  run_info.append(fmt::format("**Runner: {}**\nCategoria: {}\nPlataforma: {}\nPB: {}\nBPT: {}\nSOB: {}\nTentativa: {}\n{}\n", 
+  run_info.append(std::format("**Runner: {}**\nCategoria: {}\nPlataforma: {}\nPB: {}\nBPT: {}\nSOB: {}\nTentativa: {}\n{}\n", 
                               user_, category_, emulator_ ? "Emulador" : "Console", pb_, bpt_, sob_, attempt_count_, url_));
 
   std::size_t biggest_split_name_length{};
@@ -213,12 +213,12 @@ std::string PayloadParser::GetString() const noexcept {
       return;
     }
     
-    run_info.append(fmt::format("{}", split_info.name));
-    run_info.append(fmt::format("{:<{}}", "", biggest_split_name_length - split_info.name.size() + kFieldSpacing));
-    run_info.append(fmt::format("{:<{}}", "", biggest_split_pb_difference_length - split_info.pb_difference.size()));
-    run_info.append(fmt::format("[{}]", split_info.pb_difference));
-    run_info.append(fmt::format("{:<{}}", "", biggest_split_time_length - split_info.time.size() + kFieldSpacing));
-    run_info.append(fmt::format("{}\n", split_info.time));
+    run_info.append(std::format("{}", split_info.name));
+    run_info.append(std::format("{:<{}}", "", biggest_split_name_length - split_info.name.size() + kFieldSpacing));
+    run_info.append(std::format("{:<{}}", "", biggest_split_pb_difference_length - split_info.pb_difference.size()));
+    run_info.append(std::format("[{}]", split_info.pb_difference));
+    run_info.append(std::format("{:<{}}", "", biggest_split_time_length - split_info.time.size() + kFieldSpacing));
+    run_info.append(std::format("{}\n", split_info.time));
   });
 
   run_info.append("```");

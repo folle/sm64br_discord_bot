@@ -1,10 +1,9 @@
 #include "message_handler.h"
 
 #include <algorithm>
+#include <print>
 #include <ranges>
 #include <utility>
-
-#include <fmt/format.h>
 
 #include "settings/settings.h"
 
@@ -21,7 +20,7 @@ MessageHandler::MessageHandler(std::shared_ptr<dpp::cluster> bot) noexcept :
 
   auto const awards_reactions_and_categories = Settings::Get().GetAwardsReactionsAndCategories();
   std::ranges::for_each(awards_reactions_and_categories, [this](auto const& reaction_and_category) {
-    nomination_content_header_.append(fmt::format("{} - {}\n", reaction_and_category.first, reaction_and_category.second));
+    nomination_content_header_.append(std::format("{} - {}\n", reaction_and_category.first, reaction_and_category.second));
   });
 }
 
@@ -62,7 +61,7 @@ void MessageHandler::Process(dpp::message const& message) noexcept {
 }
 
 void MessageHandler::ProcessAnnouncementMessage(dpp::snowflake const channel_id, std::string const& content) const noexcept {
-  auto const announcement = fmt::format("@everyone {}", ::RemoveCommandHeader(content));
+  auto const announcement = std::format("@everyone {}", ::RemoveCommandHeader(content));
   logger_.Info("Received announcement message '{}'", announcement);
 
   auto const announcement_message = dpp::message(channel_id, announcement).set_allowed_mentions(false, false, true);
@@ -77,7 +76,7 @@ void MessageHandler::ProcessGeneralMessage(dpp::snowflake const channel_id, std:
 }
 
 void MessageHandler::ProcessStreamingMessage(dpp::snowflake const user_id, dpp::snowflake const message_id, std::string const& content) noexcept {
-  logger_.Info("Received streaming message with id '{}'", message_id);
+  logger_.Info("Received streaming message with id '{}'", message_id.str());
 
   if (std::regex_search(content, url_regex_)) {
     auto constexpr kStreamingMessageDeleteDelay = std::chrono::hours(6);
@@ -90,7 +89,7 @@ void MessageHandler::ProcessStreamingMessage(dpp::snowflake const user_id, dpp::
 
   bot_->message_delete(message_id, Settings::Get().GetChannelId(Settings::Channels::kStreams));
 
-  logger_.Info("Deleted streaming message with id '{}'", message_id);
+  logger_.Info("Deleted streaming message with id '{}'", message_id.str());
 }
 
 void MessageHandler::ProcessAwardsMessage(dpp::snowflake const user_id, dpp::snowflake const message_id, std::string const& content, std::vector<dpp::attachment> const& attachments) noexcept {    
@@ -111,7 +110,7 @@ void MessageHandler::SendNominationMessage(dpp::snowflake const user_id, std::st
 
   auto const sent_message_confirmation = bot_->co_direct_message_create(user_id, dpp::message(nomination_content)).sync_wait();
   if (sent_message_confirmation.is_error()) {
-    logger_.Error("Failed to send nomination message '{}' to user '{}'. Error: '{}'", nomination_content, user_id, sent_message_confirmation.get_error().human_readable);
+    logger_.Error("Failed to send nomination message '{}' to user '{}'. Error: '{}'", nomination_content, user_id.str(), sent_message_confirmation.get_error().human_readable);
     return;
   }
   
@@ -120,7 +119,7 @@ void MessageHandler::SendNominationMessage(dpp::snowflake const user_id, std::st
   std::ranges::for_each(awards_reactions_and_categories, [this, &sent_message, &user_id](auto const& reaction_and_category) {
     auto const add_reaction_confirmation = bot_->co_message_add_reaction(sent_message, reaction_and_category.first).sync_wait();
     if (add_reaction_confirmation.is_error()) {
-      logger_.Error("Failed to add awards reaction '{}' in nomination message '{}' to user '{}. Error: '{}'", reaction_and_category.first, sent_message.id, user_id, add_reaction_confirmation.get_error().human_readable);
+      logger_.Error("Failed to add awards reaction '{}' in nomination message '{}' to user '{}. Error: '{}'", reaction_and_category.first, sent_message.id.str(), user_id.str(), add_reaction_confirmation.get_error().human_readable);
     }
   });
 }
