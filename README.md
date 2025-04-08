@@ -9,9 +9,9 @@
 
 ## Supported Systems
 * Windows (clang-cl)
-* Linux x64 (clang++)
-* Linux AArch64 (clang++)
-* macOS AArch64 (clang++)
+* Linux x64 (clang/clang++)
+* Linux AArch64 (clang/clang++)
+* macOS AArch64 (clang/clang++)
 
 # Building
 Install Git and the corresponding compiler for your system.
