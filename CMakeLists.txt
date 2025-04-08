@@ -1,27 +1,19 @@
 cmake_minimum_required(VERSION 3.25.1)
 
-set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
-
-if(${CMAKE_C_COMPILER} MATCHES "clang-cl")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Qunused-arguments")
-endif()
-
-if(${CMAKE_CXX_COMPILER} MATCHES "clang-cl")
+# Suppress: argument unused during compilation: '/Zc:preprocessor' [-Wunused-command-line-argument]
+if (${CMAKE_CXX_COMPILER} MATCHES "clang-cl")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Qunused-arguments")
 endif()
 
-find_package(Git QUIET)
-if(GIT_FOUND)
-  message(STATUS "Updating VCPKG submodule")
-  execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                  RESULT_VARIABLE GIT_SUBMOD_RESULT)
+find_program(CLANG_TIDY_EXECUTABLE NAMES "clang-tidy" REQUIRED)
+#set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE} -checks=-*,readability-*)
 
-  if(GIT_SUBMOD_RESULT EQUAL "0")
-    message(STATUS "Successfully updated VCPKG submodule")
-  else()
-    message(FATAL_ERROR "Failed to update VCPKG submodule: '${GIT_SUBMOD_RESULT}'")
-  endif()
+find_package(Git REQUIRED)
+execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                RESULT_VARIABLE GIT_SUBMODULE_RESULT)
+if(GIT_SUBMODULE_RESULT)
+  message(FATAL_ERROR "Failed to run 'git submodule update --init': '${GIT_SUBMODULE_RESULT}'")
 endif()
 
 project(sm64br_discord_bot VERSION 1.0 DESCRIPTION "SM64BR Discord Bot")
