@@ -1,0 +1,61 @@
+{
+  "bot": {
+    "token": ""
+  },
+  "users": {
+    "petalite": 146391850012377088
+  },
+  "server": {
+    "guild": 1018970433627885568,
+    "channels": {
+      "general": 1018970433627885571,
+      "streams": 1116382308245704936,
+      "updates": 1119016096826146826,
+      "clips": 1320204114902126632
+    },
+    "roles": {
+      "moderator": 1018992321632686170,
+      "streaming": 1176297176645763162,
+      "pacepals": 1196549524907364483
+    }
+  },
+  "awards": {
+    "0️⃣": "Melhor Pop Off",
+    "1️⃣": "Melhor Meme",
+    "2️⃣": "Momento Mais Engraçado",
+    "3️⃣": "Momento Mais Insano",
+    "4️⃣": "Melhor Rage",
+    "5️⃣": "Melhor Clutch",
+    "6️⃣": "Momento Skill Issue"
+  },
+  "the_run": {
+    "endpoint": "wss://fh76djw1t9.execute-api.eu-west-1.amazonaws.com/prod",
+    "thresholds": [
+      {
+        "category": "0 Star",
+        "bpt": 453000,
+        "percentage": 0.78
+      },
+      {
+        "category": "1 Star",
+        "bpt": 464000,
+        "percentage": 0.81
+      },
+      {
+        "category": "16 Star",
+        "bpt": 931360,
+        "percentage": 0.91
+      },
+      {
+        "category": "70 Star",
+        "bpt": 2912000,
+        "percentage": 0.81
+      },
+      {
+        "category": "120 Star",
+        "bpt": 2570000,
+        "percentage": 0.81
+      }
+    ]
+  }
+}
