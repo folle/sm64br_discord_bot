@@ -8,11 +8,34 @@
 * The Run integration for pacepals pings
 
 ## Supported Systems
-* Windows (clang-cl)
-* Linux x64 (clang/clang++)
-* Linux AArch64 (clang/clang++)
-* macOS AArch64 (clang/clang++)
+* Linux x64
+* Raspbery Pi 5 (Linux cross-compile)
+* macOS AArch64
 
-# Building
-Install Git and the corresponding compiler for your system.
-All dependencies are built with VCPKG automatically during the CMake configuration step.
+## Dependencies
+Linux (Arch):
+```
+sudo pacman -Sy clang cmake git lld ninja unzip zip
+```
+
+macOS:
+```
+xcode-select --install
+brew install cmake lld ninja
+```
+
+## Building
+```
+cmake --preset PRESET
+cmake --build --preset PRESET
+```
+
+Where PRESET can be one of:
+```
+linux-debug
+linux-release
+rpi5-debug
+rpi5-release
+mac-debug
+mac-release
+```
