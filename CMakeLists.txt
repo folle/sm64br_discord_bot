@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.25.1)
+cmake_minimum_required(VERSION 4.2.1)
 
-# /EHs: enable C++ exceptions
-# -Qunused-arguments: suppress 'argument unused during compilation: '/Zc:preprocessor' [-Wunused-command-line-argument]'
-if (${CMAKE_CXX_COMPILER} MATCHES "clang-cl")
-  add_compile_options(/EHsc -Qunused-arguments)
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
 endif()
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #find_program(CLANG_TIDY_EXECUTABLE NAMES "clang-tidy" REQUIRED)
 #set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE} -checks=-*,readability-*)
@@ -40,15 +40,17 @@ target_include_directories(${PROJECT_NAME} PRIVATE
                            src
                            src/bot)
 
-find_package(boost_beast CONFIG REQUIRED)                                           # therun.gg integration
+find_package(Boost REQUIRED COMPONENTS beast)                                       # therun.gg integration
 find_package(dpp CONFIG REQUIRED)                                                   # Interfacing with Discord
 find_package(nlohmann_json CONFIG REQUIRED)                                         # Settings storage, therun.gg parsing
+find_package(OpenSSL REQUIRED)                                                      # DPP dependency
 find_package(spdlog CONFIG REQUIRED)                                                # Logging
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
                       Boost::beast
                       dpp::dpp
                       nlohmann_json::nlohmann_json
+                      OpenSSL::Crypto
                       spdlog::spdlog_header_only)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -57,4 +59,15 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/settings/settings.json")
   configure_file(sample/settings.json "${CMAKE_BINARY_DIR}/settings/settings.json" COPYONLY)
+endif()
+
+if (CMAKE_EXPORT_COMPILE_COMMANDS)
+  add_custom_target(
+      copy_compile_commands ALL
+      COMMAND ${CMAKE_COMMAND} -E create_symlink
+              ${CMAKE_BINARY_DIR}/compile_commands.json
+              ${CMAKE_SOURCE_DIR}/compile_commands.json
+      COMMENT "Symlinking build compile_commands.json to project root"
+      VERBATIM
+  )
 endif()

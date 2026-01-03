@@ -4,6 +4,7 @@
     "boost-beast",
     "dpp",
     "nlohmann-json",
+    "openssl",
     "spdlog"
   ]
 }
